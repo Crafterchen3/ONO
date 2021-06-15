@@ -23,4 +23,20 @@ public class ONO : MonoBehaviour
     {
         Rounds = rounds;
     }
+
+    public static bool DoCardsMatch(Card card1, Card card2)
+    {
+        
+        if (card1.mColor == card2.mColor || card1.mColor == 0)
+        {
+            return true;
+        }
+
+        if (card1.mNumber == card2.mNumber)
+        {
+            return true;
+        }
+        
+        return false;
+    }
 }

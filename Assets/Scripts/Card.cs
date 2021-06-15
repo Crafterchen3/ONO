@@ -4,8 +4,10 @@ using UnityEngine;
 
 public class Card : MonoBehaviour
 {
-
+    private Game game;
+    private GameObject mgame;
     public int mColor;
+    //0 is black
     public bool mSpecial;
     public int mNumber;
     //Anything over 9 is a special card
@@ -15,7 +17,8 @@ public class Card : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        mgame = GameObject.FindGameObjectWithTag("game");
+        game = mgame.GetComponent<Game>();
     }
 
     // Update is called once per frame
@@ -34,5 +37,28 @@ public class Card : MonoBehaviour
     {
         this.mSpecial = mSpecial;
         this.mNumber = mNumber;
+        this.mColor = 0;
+    }
+
+    void OnMouseOver()
+    {
+        // do something
+        Debug.Log("Over");
+        // Detect left mouse button click
+        if (Input.GetMouseButtonDown(0))
+        {
+
+            Debug.Log("click");
+
+
+
+            if (ONO.DoCardsMatch(this, game.cardOnTop)) {
+                mgame.GetComponent<SpriteRenderer>().sprite = GetComponent<SpriteRenderer>().sprite;
+                game.cardOnTop = this;
+                Destroy(gameObject);
+            }
+                    
+        }
+
     }
 }
