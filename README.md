@@ -1,3 +1,4 @@
 # ONO
 
-ONO is a game like UNO™ for android only that ONO supports local Multiplayer.
+ONO is a game like UNO™ for android. 
+Only that ONO supports local Multiplayer.
