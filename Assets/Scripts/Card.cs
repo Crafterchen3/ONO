@@ -43,7 +43,6 @@ public class Card : MonoBehaviour
     void OnMouseOver()
     {
         // do something
-        Debug.Log("Over");
         // Detect left mouse button click
         if (Input.GetMouseButtonDown(0))
         {
@@ -55,6 +54,12 @@ public class Card : MonoBehaviour
             if (ONO.DoCardsMatch(this, game.cardOnTop)) {
                 mgame.GetComponent<SpriteRenderer>().sprite = GetComponent<SpriteRenderer>().sprite;
                 game.cardOnTop = this;
+                if (mSpecial)
+                {
+                    CanvasGroup ca =GameObject.Find("Wish").GetComponent<CanvasGroup>();
+                    ca.alpha = 1;
+                    ca.interactable = true;
+                }
                 Destroy(gameObject);
             }
                     
