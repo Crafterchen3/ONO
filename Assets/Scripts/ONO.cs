@@ -7,6 +7,19 @@ public class ONO : MonoBehaviour
 
     private static int Rounds;
 
+    public const int RED    = 1;
+    public const int YELLOW = 1;
+    public const int GREEN  = 1;
+    public const int BLUE   = 1;
+
+    public const int SKIP     = 10;
+    public const int EXCHANGE = 11;
+    public const int PLUS2    = 12;
+
+    public const int WISH = 1;
+    public const int WISHPLUS4 = 2;
+
+
     // Start is called before the first frame update
     void Start()
     {
