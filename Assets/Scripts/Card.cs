@@ -4,27 +4,19 @@ using UnityEngine;
 
 public class Card : MonoBehaviour
 {
-    private Game mGame;
-    private GameObject mGameObject;
-    public int mColor;
-    //0 is black
-    public bool mSpecial;
-    public int mNumber;
-    //Anything over 9 is a special card
-    //Example: a blue +2 would be 10
+    private Game game;
+    private CardDescriptor cardDescriptor;
+    private SpriteRenderer spriteRenderer;
 
 
     // Start is called before the first frame update
     void Start()
     {
-        Debug.Log("Start was called!");
-        mGameObject = GameObject.FindGameObjectWithTag("game");
-        mGame = mGameObject.GetComponent<Game>();
-        Debug.Log("Start(" + mColor + ", " + mNumber + ")");
-        if (mSpecial)
-            GetComponent<SpriteRenderer>().sprite = mGame.getSpecialCardFace(mNumber);
-        else
-            GetComponent<SpriteRenderer>().sprite = mGame.getCardFace(mColor, mNumber);
+        GameObject gameObject = GameObject.FindGameObjectWithTag("game");
+        game = gameObject.GetComponent<Game>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+
+        Render();
     }
 
     // Update is called once per frame
@@ -33,38 +25,21 @@ public class Card : MonoBehaviour
 
     }
 
-    public void Initialize(int mColor, int mNumber)
+    public void SetDescriptor(CardDescriptor cardDescriptor)
     {
-        this.mColor = mColor;
-        this.mNumber = mNumber;
-
+        this.cardDescriptor = cardDescriptor;
+        Render();
     }
 
-    public void InitializeSpecial(int mIndex)
+    private void Render()
     {
-        this.mSpecial = true;
-        this.mNumber = mIndex;
-        this.mColor = 0;
-
+        if ((cardDescriptor != null) && (game != null))
+            spriteRenderer.sprite = game.GetCardFace(cardDescriptor);
     }
-
-    private int count = 0;
 
     void OnMouseDown()
     {
-        // do something
-        // Detect left mouse button click
-        if (ONO.DoCardsMatch(this, mGame.cardOnTop))
-        {
-            mGameObject.GetComponent<SpriteRenderer>().sprite = GetComponent<SpriteRenderer>().sprite;
-            mGame.cardOnTop = this;
-            if (mSpecial)
-            {
-                CanvasGroup ca = GameObject.Find("Wish").GetComponent<CanvasGroup>();
-                ca.alpha = 1;
-                ca.interactable = true;
-            }
-            Destroy(gameObject);
-        }
+        if (game.PlayCard(cardDescriptor, spriteRenderer.sprite))
+            Destroy(base.gameObject);
     }
 }
