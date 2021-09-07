@@ -14,6 +14,7 @@ public class Game : MonoBehaviour
 
     private Sprite[] allCardFaces;
     private SpriteRenderer spriteRenderer;
+    private GameObject wishPopup;
 
     private bool onoPressed = false;
 
@@ -27,6 +28,8 @@ public class Game : MonoBehaviour
     {
         allCardFaces = Resources.LoadAll<Sprite>("Textures/Cards/Cards");
         spriteRenderer = GetComponent<SpriteRenderer>();
+        wishPopup = GameObject.Find("Wish");
+        wishPopup.SetActive(false);
 
         CreateCards();
         DistributeCards();
@@ -110,11 +113,7 @@ public class Game : MonoBehaviour
             spriteRenderer.sprite = cardFace;
             cardOnTop = cardDescriptor;
             if (cardDescriptor.Special)
-            {
-                CanvasGroup ca = GameObject.Find("Wish").GetComponent<CanvasGroup>();
-                ca.alpha = 1;
-                ca.interactable = true;
-            }
+                wishPopup.SetActive(true);
             if ((cardsOfPlayer.Count == 1) && !onoPressed)
                 Draw(2);
             onoPressed = false;
@@ -168,9 +167,7 @@ public class Game : MonoBehaviour
     public void Wish(int color)
     {
         cardOnTop.Color = color;
-        CanvasGroup ca = GameObject.Find("Wish").GetComponent<CanvasGroup>();
-        ca.alpha = 0;
-        ca.interactable = false;
+        wishPopup.SetActive(false);
         switch (color)
         {
             case 1:
