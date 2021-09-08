@@ -21,7 +21,7 @@ public class UnplayedCards : MonoBehaviour
 
     void OnMouseDown()
     {
-        game.Draw(1);
+        game.DrawCard();
     }
 
 }

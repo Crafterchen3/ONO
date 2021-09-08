@@ -6,6 +6,8 @@ TagManager:
   tags:
   - game
   - WIsh
+  - playerName
+  - nextPlayerPopup
   layers:
   - Default
   - TransparentFX

@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Game : MonoBehaviour
 {
+    const int maxPlayers = 6;
 
     public CardDescriptor cardOnTop;
     public Sprite wish1;
@@ -11,17 +12,32 @@ public class Game : MonoBehaviour
     public Sprite wish3;
     public Sprite wish4;
     public GameObject cardPrefab;
+    public GameObject playerPrefab;
+    public float cardCreationRate = 0.5f;
+    public int numberOfPlayers = 2;
 
     private Sprite[] allCardFaces;
     private SpriteRenderer spriteRenderer;
     private GameObject wishPopup;
 
-    private bool onoPressed = false;
+    private GameObject nextPlayerPopup;
+    private NextPlayer nextPlayerButton;
+
+    private int sortingOrder = 10000;
 
     private List<CardDescriptor> allCards = new List<CardDescriptor>();
     private List<CardDescriptor> playedCards = new List<CardDescriptor>();
     private List<CardDescriptor> unplayedCards = new List<CardDescriptor>();
-    private List<CardDescriptor> cardsOfPlayer = new List<CardDescriptor>();
+    private List<CardDescriptor> newCardsQueue = new List<CardDescriptor>();
+    private List<GameObject> renderedCards = new List<GameObject>();
+
+    private Vector3[] playerPositions = new Vector3[maxPlayers];
+
+    private List<Player> players = new List<Player>();
+    private Player currentPlayer;
+    private int currentPlayerIndex = -1;
+    private bool directionIsClockwise = true;
+    private int seatedPlayers = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -30,19 +46,62 @@ public class Game : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         wishPopup = GameObject.Find("Wish");
         wishPopup.SetActive(false);
+        CreatePlayers();
+    }
 
+    public void PlayerPresent()
+    {
+        seatedPlayers++;
+        if ((seatedPlayers == numberOfPlayers) && (nextPlayerPopup != null))
+            Initialize();
+    }
+
+    public void NextPlayerPopupPresent(NextPlayer nextPlayer, GameObject nextPlayerGameObject)
+    {
+        nextPlayerPopup = nextPlayerGameObject;
+        nextPlayerButton = nextPlayer;
+        if ((seatedPlayers == numberOfPlayers) && (nextPlayerPopup != null))
+            Initialize();
+    }
+
+    private void Initialize()
+    {
         CreateCards();
         DistributeCards();
         ChooseTopCard();
         spriteRenderer.sprite = GetCardFace(cardOnTop);
+        NextPlayer();
+    }
+
+    private Player CreatePlayer(int pos, string name)
+    {
+        GameObject clone = Instantiate(playerPrefab, playerPositions[pos], Quaternion.identity);
+        Player result = clone.GetComponent<Player>();
+        result.SetName(name);
+        return result;
+    }
+
+
+    private void CreatePlayers()
+    {
+        playerPositions[0] = new Vector3(-9.5f, 3f, 0f);
+        playerPositions[1] = new Vector3(-4f, 3f, 0f);
+
+        players.Add(CreatePlayer(0, "Thomas"));
+        players.Add(CreatePlayer(1, "Paul"));
     }
 
     private void CreateCards()
     {
         for (int color = 1; color <= 4; color++)
-            for (int number = 0; number <= CardDescriptor.PLUS2; number++)
-                allCards.Add(new CardDescriptor(color, number));
-        for (int i = 0; i < 8; i++)
+            for (int number = 0; number <= 9; number++)
+                for (int c = 0; c < 18; c++)
+                    allCards.Add(new CardDescriptor(color, number));
+        for (int color = 1; color <= 4; color++)
+            for (int number = CardDescriptor.SKIP; number <= CardDescriptor.PLUS2; number++)
+                for (int c = 0; c < 8; c++)
+                    allCards.Add(new CardDescriptor(color, number));
+        for (int i = 0; i < 4; i++)
             allCards.Add(new CardDescriptor(CardDescriptor.WISH));
         for (int i = 0; i < 4; i++)
             allCards.Add(new CardDescriptor(CardDescriptor.WISHPLUS4));
@@ -59,7 +118,8 @@ public class Game : MonoBehaviour
             unplayedCards.Add(toDistribute[pick]);
             toDistribute.RemoveAt(pick);
         }
-        Draw(5);
+        foreach (Player p in players)
+            p.Draw(5);
     }
 
     private void TurnDecks()
@@ -89,50 +149,140 @@ public class Game : MonoBehaviour
         } while (cardOnTop == null);
     }
 
-    public void Draw(int numberOfCards)
+    public CardDescriptor Draw()
     {
-        for (int i = 0; i < numberOfCards; i++)
+        CardDescriptor result = null;
+
+        if (unplayedCards.Count == 0)
+            TurnDecks();
+        if (unplayedCards.Count > 0)
         {
-            if (unplayedCards.Count == 0)
-                TurnDecks();
-            if (unplayedCards.Count > 0)
-            {
-                AssignCardToPlayer(unplayedCards[unplayedCards.Count - 1]);
-                unplayedCards.RemoveAt(unplayedCards.Count - 1);
-            }
+            result = unplayedCards[unplayedCards.Count - 1];
+            unplayedCards.RemoveAt(unplayedCards.Count - 1);
         }
-        onoPressed = false;
+        return result;
     }
 
     public bool PlayCard(CardDescriptor cardDescriptor, Sprite cardFace)
     {
         if (ONO.DoCardsMatch(cardDescriptor, cardOnTop))
         {
-            cardsOfPlayer.Remove(cardDescriptor);
+            currentPlayer.cardsOfPlayer.Remove(cardDescriptor);
             playedCards.Add(cardDescriptor);
             spriteRenderer.sprite = cardFace;
             cardOnTop = cardDescriptor;
             if (cardDescriptor.Special)
                 wishPopup.SetActive(true);
-            if ((cardsOfPlayer.Count == 1) && !onoPressed)
-                Draw(2);
-            onoPressed = false;
+            else
+            {
+                switch (cardDescriptor.Number)
+                {
+                    case CardDescriptor.PLUS2:
+                        GetNextPlayer().plus2Penalty = true;
+                        break;
+                    case CardDescriptor.CHANGE_DIR:
+                        if (numberOfPlayers < 3)
+                            NextPlayer();
+                        else
+                            directionIsClockwise = !directionIsClockwise;
+                        break;
+                    case CardDescriptor.SKIP:
+                        NextPlayer();
+                        break;
+                }
+                NextPlayer();
+            }
             return true;
         }
         return false;
     }
 
-    private void AssignCardToPlayer(CardDescriptor cardDescriptor)
+    public void DrawCard()
     {
-        cardsOfPlayer.Add(cardDescriptor);
+        if ((currentPlayer != null) && currentPlayer.isActivePlayer)
+            currentPlayer.Draw(1);
+    }
+
+    private Player GetNextPlayer()
+    {
+        int index;
+        if (directionIsClockwise)
+            index = (currentPlayerIndex + 1) % players.Count;
+        else
+        {
+            index = currentPlayerIndex - 1;
+            if (index < 0)
+                index = players.Count - 1;
+        }
+        return players[index];
+    }
+
+    public void NextPlayer()
+    {
+        if (currentPlayer != null)
+        {
+            currentPlayer.SetPlayerActive(false);
+            if (currentPlayer.cardsOfPlayer.Count == 0)
+            {
+                CurrentPlayerWins();
+                return;
+            }
+        }
+
+        if (directionIsClockwise)
+            currentPlayerIndex = (currentPlayerIndex + 1) % players.Count;
+        else
+        {
+            currentPlayerIndex--;
+            if (currentPlayerIndex < 0)
+                currentPlayerIndex = players.Count - 1;
+        }
+        currentPlayer = players[currentPlayerIndex];
+        nextPlayerButton.Show(currentPlayer.playerName);
+    }
+
+    private void CurrentPlayerWins()
+    {
+    }
+
+    public void HideCards()
+    {
+        while (renderedCards.Count > 0)
+        {
+            GameObject.Destroy(renderedCards[0]);
+            renderedCards.RemoveAt(0);
+        }
+    }
+
+    public void ShowCard(CardDescriptor cardDescriptor)
+    {
+        newCardsQueue.Add(cardDescriptor);
+    }
+
+    private void RenderNewCard(CardDescriptor cardDescriptor)
+    {
         GameObject clone = Instantiate(cardPrefab, new Vector3(-8.166648f, -3.3f, 0f), Quaternion.identity);
         Card card = clone.GetComponent<Card>();
         card.SetDescriptor(cardDescriptor);
+
+        SpriteRenderer sr = clone.GetComponent<SpriteRenderer>();
+        sr.sortingOrder = sortingOrder;
+        sortingOrder--;
+
+        renderedCards.Add(clone);
     }
+
+    private float nextCardCreation = 0.0f;
 
     // Update is called once per frame
     void Update()
     {
+        if ((newCardsQueue.Count > 0) && (Time.time > nextCardCreation))
+        {
+            nextCardCreation = Time.time + cardCreationRate;
+            RenderNewCard(newCardsQueue[0]);
+            newCardsQueue.RemoveAt(0);
+        }
 
     }
 
@@ -183,11 +333,18 @@ public class Game : MonoBehaviour
                 spriteRenderer.sprite = wish4;
                 break;
         }
+        NextPlayer();
     }
 
     public void OnoPressed()
     {
-        Debug.Log("OnoPressed");
-        onoPressed = true;
+        if (currentPlayer != null)
+            currentPlayer.onoPressed = true;
+    }
+
+    public void NextPlayerIsReady()
+    {
+        nextPlayerPopup.SetActive(false);
+        currentPlayer.SetPlayerActive(true);
     }
 }

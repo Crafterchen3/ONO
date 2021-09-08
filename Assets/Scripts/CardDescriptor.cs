@@ -16,9 +16,9 @@ public class CardDescriptor
     public const int BLUE   = 4;
 
     // Special cards with colors:
-    public const int SKIP     = 10;
-    public const int EXCHANGE = 11;
-    public const int PLUS2    = 12;
+    public const int SKIP       = 10;
+    public const int CHANGE_DIR = 11;
+    public const int PLUS2      = 12;
 
     // Special cards without colors:
     public const int WISH = 1;
