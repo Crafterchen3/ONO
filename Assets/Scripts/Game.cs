@@ -14,7 +14,7 @@ public class Game : MonoBehaviour
     public GameObject cardPrefab;
     public GameObject playerPrefab;
     public float cardCreationRate = 0.5f;
-    public int numberOfPlayers = 2;
+    public int numberOfPlayers = 3;
 
     private Sprite[] allCardFaces;
     private SpriteRenderer spriteRenderer;
@@ -86,50 +86,74 @@ public class Game : MonoBehaviour
     {
         playerPositions[0] = new Vector3(-9.5f, 3f, 0f);
         playerPositions[1] = new Vector3(-4f, 3f, 0f);
+        playerPositions[2] = new Vector3(1.5f, 3f, 0f);
 
         players.Add(CreatePlayer(0, "Thomas"));
         players.Add(CreatePlayer(1, "Paul"));
+        players.Add(CreatePlayer(2, "Benjamin"));
     }
 
     private void CreateCards()
     {
         for (int color = 1; color <= 4; color++)
-            for (int number = 0; number <= 9; number++)
-                for (int c = 0; c < 18; c++)
-                    allCards.Add(new CardDescriptor(color, number));
-        for (int color = 1; color <= 4; color++)
-            for (int number = CardDescriptor.SKIP; number <= CardDescriptor.PLUS2; number++)
-                for (int c = 0; c < 8; c++)
-                    allCards.Add(new CardDescriptor(color, number));
-        for (int i = 0; i < 4; i++)
-            allCards.Add(new CardDescriptor(CardDescriptor.WISH));
-        for (int i = 0; i < 4; i++)
+        {
             allCards.Add(new CardDescriptor(CardDescriptor.WISHPLUS4));
+            allCards.Add(new CardDescriptor(CardDescriptor.WISH));
+            for (int number = 0; number <= CardDescriptor.PLUS2; number++)
+                for (int c = 0; c < 18; c++)
+                {
+                    if ((number > 9) && (c >= 8))
+                        continue;
+                    allCards.Add(new CardDescriptor(color, number));
+                }
+        }
+    }
+
+    private void Mix()
+    {
+        List<CardDescriptor> toDistribute = new List<CardDescriptor>();
+        for (int i = 0; i < 5; i++)
+        {
+
+            foreach (CardDescriptor c in allCards)
+                toDistribute.Add(c);
+            while (toDistribute.Count > 0)
+            {
+                int pick = Random.Range(0, toDistribute.Count - 1);
+                CardDescriptor card = toDistribute[pick];
+                unplayedCards.Add(card);
+                toDistribute.RemoveAt(pick);
+            }
+            allCards.Clear();
+            allCards.AddRange(unplayedCards);
+            unplayedCards.Clear();
+        }
+        int cut = Random.Range(0, allCards.Count - 1);
+        while (allCards.Count > cut)
+        {
+            CardDescriptor card = allCards[cut];
+            unplayedCards.Add(card);
+            allCards.RemoveAt(cut);
+        }
+        unplayedCards.AddRange(allCards);
     }
 
     private void DistributeCards()
     {
-        List<CardDescriptor> toDistribute = new List<CardDescriptor>();
-        foreach (CardDescriptor c in allCards)
-            toDistribute.Add(c);
-        while (toDistribute.Count > 0)
-        {
-            int pick = Random.Range(0, toDistribute.Count - 1);
-            unplayedCards.Add(toDistribute[pick]);
-            toDistribute.RemoveAt(pick);
-        }
+        Mix();
         foreach (Player p in players)
             p.Draw(5);
     }
 
     private void TurnDecks()
     {
-        while (playedCards.Count > 0)
+        playedCards.RemoveAt(playedCards.Count - 1); // top card
+        while (playedCards.Count > 1)
         {
             unplayedCards.Add(playedCards[playedCards.Count - 1]);
             playedCards.RemoveAt(playedCards.Count - 1);
         }
-
+        playedCards.Add(cardOnTop);
     }
 
     public void ChooseTopCard()
@@ -165,30 +189,39 @@ public class Game : MonoBehaviour
 
     public bool PlayCard(CardDescriptor cardDescriptor, Sprite cardFace)
     {
-        if (ONO.DoCardsMatch(cardDescriptor, cardOnTop))
+        if (cardDescriptor.valid)
         {
             currentPlayer.cardsOfPlayer.Remove(cardDescriptor);
             playedCards.Add(cardDescriptor);
             spriteRenderer.sprite = cardFace;
             cardOnTop = cardDescriptor;
             if (cardDescriptor.Special)
+            {
+                if (cardDescriptor.Number == CardDescriptor.WISHPLUS4)
+                    GetNextPlayer().numberOfCardsToDraw = currentPlayer.numberOfCardsToDraw == 1 ? 4 : currentPlayer.numberOfCardsToDraw + 4;
+                currentPlayer.numberOfCardsToDraw = 1;
                 wishPopup.SetActive(true);
+            }
             else
             {
                 switch (cardDescriptor.Number)
                 {
                     case CardDescriptor.PLUS2:
-                        GetNextPlayer().plus2Penalty = true;
+                        GetNextPlayer().numberOfCardsToDraw = currentPlayer.numberOfCardsToDraw == 1 ? 2 : currentPlayer.numberOfCardsToDraw + 2;
+                        currentPlayer.numberOfCardsToDraw = 1;
                         break;
                     case CardDescriptor.CHANGE_DIR:
                         if (numberOfPlayers < 3)
-                            NextPlayer();
+                        {
+                            NextPlayer(2);
+                            return true;
+                        }
                         else
                             directionIsClockwise = !directionIsClockwise;
                         break;
                     case CardDescriptor.SKIP:
-                        NextPlayer();
-                        break;
+                        NextPlayer(2);
+                        return true;
                 }
                 NextPlayer();
             }
@@ -200,45 +233,50 @@ public class Game : MonoBehaviour
     public void DrawCard()
     {
         if ((currentPlayer != null) && currentPlayer.isActivePlayer)
-            currentPlayer.Draw(1);
+        {
+            currentPlayer.Draw(currentPlayer.numberOfCardsToDraw);
+            currentPlayer.numberOfCardsToDraw = 1;
+        }
     }
 
-    private Player GetNextPlayer()
+    private int GetNextPlayerIndex(int increment = 1)
     {
         int index;
         if (directionIsClockwise)
-            index = (currentPlayerIndex + 1) % players.Count;
+            index = (currentPlayerIndex + increment) % players.Count;
         else
         {
-            index = currentPlayerIndex - 1;
-            if (index < 0)
-                index = players.Count - 1;
+            index = (currentPlayerIndex + players.Count - increment) % players.Count;
         }
-        return players[index];
+        return index;
     }
 
-    public void NextPlayer()
+    private Player GetNextPlayer(int increment = 1)
     {
-        if (currentPlayer != null)
+        return players[GetNextPlayerIndex(increment)];
+    }
+
+    public void NextPlayer(int increment = 1)
+    {
+        if ((currentPlayer != null) && (currentPlayer.cardsOfPlayer.Count == 0))
         {
             currentPlayer.SetPlayerActive(false);
-            if (currentPlayer.cardsOfPlayer.Count == 0)
-            {
-                CurrentPlayerWins();
-                return;
-            }
+            CurrentPlayerWins();
+            return;
         }
 
-        if (directionIsClockwise)
-            currentPlayerIndex = (currentPlayerIndex + 1) % players.Count;
-        else
+        int nextIndex = GetNextPlayerIndex(increment);
+
+        if (nextIndex != currentPlayerIndex)
         {
-            currentPlayerIndex--;
-            if (currentPlayerIndex < 0)
-                currentPlayerIndex = players.Count - 1;
+            if (currentPlayer != null)
+                currentPlayer.SetPlayerActive(false);
+            currentPlayerIndex = nextIndex;
+            currentPlayer = players[currentPlayerIndex];
+            nextPlayerButton.Show(currentPlayer.playerName);
         }
-        currentPlayer = players[currentPlayerIndex];
-        nextPlayerButton.Show(currentPlayer.playerName);
+        else
+            currentPlayer.SetPlayerActive(true);
     }
 
     private void CurrentPlayerWins()
@@ -311,7 +349,7 @@ public class Game : MonoBehaviour
         if (index == 1)
             return GetCardFace(1, 13);
         else
-            return GetCardFace(2, 13);
+            return GetCardFace(3, 13);
     }
 
     public void Wish(int color)
