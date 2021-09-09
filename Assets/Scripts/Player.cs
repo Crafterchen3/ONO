@@ -12,7 +12,7 @@ public class Player : MonoBehaviour
     public List<CardDescriptor> cardsOfPlayer = new List<CardDescriptor>();
     public string playerName;
     public float endMoveDelay = 0.5f;
-    public bool plus2Penalty = false;
+    public int numberOfCardsToDraw = 1;
 
     private int newCardsCount;
 
@@ -47,29 +47,43 @@ public class Player : MonoBehaviour
 
     public void SetPlayerActive(bool active)
     {
-        isActivePlayer = active;
         if (active)
         {
-            text.faceColor = activeColor;
-            for(int i=0; i < cardsOfPlayer.Count; i++)
-            {
-                GameObject.Destroy(backSides[0]);
-                backSides.RemoveAt(0);
-                game.ShowCard(cardsOfPlayer[i]);
-            }
+            if (!isActivePlayer)
+                for (int i = 0; i < cardsOfPlayer.Count; i++)
+                {
+                    GameObject.Destroy(backSides[0]);
+                    backSides.RemoveAt(0);
+                    game.ShowCard(cardsOfPlayer[i]);
+                }
+            isActivePlayer = true;
             drawingAllowed = true;
-            if (((cardsOfPlayer.Count == 1) && !onoPressed) || plus2Penalty)
-            {
+            ComputeCardValidity();
+            if ((cardsOfPlayer.Count == 1) && !onoPressed)
                 Draw(2);
-                plus2Penalty = false;
-            }
         }
         else
         {
             text.faceColor = inactiveColor;
             game.HideCards();
             newCardsCount = cardsOfPlayer.Count;
+            isActivePlayer = false;
         }
+
+    }
+
+    private bool ComputeCardValidity()
+    {
+        bool result = false;
+        foreach (CardDescriptor c in cardsOfPlayer)
+        {
+            if (numberOfCardsToDraw > 1)
+                c.valid = ((c.Special == game.cardOnTop.Special) && (c.Number == game.cardOnTop.Number)); // both plus2 or plus4
+            else
+                c.valid = ONO.DoCardsMatch(c, game.cardOnTop);
+            result = result || c.valid;
+        }
+        return result;
     }
 
     private float nextCardCreation = 0.0f;
@@ -104,14 +118,6 @@ public class Player : MonoBehaviour
         RenderName();
     }
 
-    private bool hasValidMove()
-    {
-        foreach (CardDescriptor c in cardsOfPlayer)
-            if (ONO.DoCardsMatch(c, game.cardOnTop))
-                return true;
-        return false;
-    }
-
     public void Draw(int numberOfCards)
     {
         if (!drawingAllowed)
@@ -122,16 +128,18 @@ public class Player : MonoBehaviour
             CardDescriptor card = game.Draw();
             cardsOfPlayer.Add(card);
             if (isActivePlayer)
-            {
                 game.ShowCard(card);
-                drawingAllowed = false;
-                if (!hasValidMove())
-                    ScheduleDelayedEndMove();
-            }
             else
                 newCardsCount++;
         }
         onoPressed = false;
+        if (isActivePlayer)
+        {
+            drawingAllowed = false;
+            numberOfCardsToDraw = 1;
+            if (!ComputeCardValidity())
+                ScheduleDelayedEndMove();
+        }
     }
 
 

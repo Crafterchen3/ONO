@@ -7,6 +7,7 @@ public class CardDescriptor
     public int Color;
     public bool Special;
     public int Number;
+    public bool valid;
 
     // Colors:
     public const int BLACK  = 0;
