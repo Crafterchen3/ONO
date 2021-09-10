@@ -95,18 +95,20 @@ public class Game : MonoBehaviour
 
     private void CreateCards()
     {
-        for (int color = 1; color <= 4; color++)
-        {
-            allCards.Add(new CardDescriptor(CardDescriptor.WISHPLUS4));
-            allCards.Add(new CardDescriptor(CardDescriptor.WISH));
-            for (int number = 0; number <= CardDescriptor.PLUS2; number++)
-                for (int c = 0; c < 18; c++)
+        for (int c = 0; c < 18; c++)
+            for (int color = 1; color <= 4; color++)
+            {
+                if (c == 5)
+                    allCards.Add(new CardDescriptor(CardDescriptor.WISHPLUS4));
+                if (c == 9)
+                    allCards.Add(new CardDescriptor(CardDescriptor.WISH));
+                for (int number = 0; number <= CardDescriptor.PLUS2; number++)
                 {
                     if ((number > 9) && (c >= 8))
                         continue;
                     allCards.Add(new CardDescriptor(color, number));
                 }
-        }
+            }
     }
 
     private void Mix()
@@ -302,6 +304,10 @@ public class Game : MonoBehaviour
         GameObject clone = Instantiate(cardPrefab, new Vector3(-8.166648f, -3.3f, 0f), Quaternion.identity);
         Card card = clone.GetComponent<Card>();
         card.SetDescriptor(cardDescriptor);
+
+        if (renderedCards.Count == 0)
+            foreach (BoxCollider2D c in clone.GetComponents<BoxCollider2D>())
+                c.enabled = true; // react on click on the right side of the card
 
         SpriteRenderer sr = clone.GetComponent<SpriteRenderer>();
         sr.sortingOrder = sortingOrder;

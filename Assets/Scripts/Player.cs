@@ -21,8 +21,8 @@ public class Player : MonoBehaviour
     private TMP_Text text;
     private List<GameObject> backSides = new List<GameObject>();
 
-    private Color activeColor = new Color32(255, 0, 0, 255);
-    private Color inactiveColor = new Color32(255, 255, 0, 255);
+    private Color inactiveColor = new Color32(255, 0, 0, 255);
+    private Color activeColor = new Color32(255, 255, 0, 255);
 
     private bool drawingAllowed = true;
 
@@ -49,6 +49,7 @@ public class Player : MonoBehaviour
     {
         if (active)
         {
+            text.color = activeColor;
             if (!isActivePlayer)
                 for (int i = 0; i < cardsOfPlayer.Count; i++)
                 {
@@ -64,7 +65,7 @@ public class Player : MonoBehaviour
         }
         else
         {
-            text.faceColor = inactiveColor;
+            text.color = inactiveColor;
             game.HideCards();
             newCardsCount = cardsOfPlayer.Count;
             isActivePlayer = false;
