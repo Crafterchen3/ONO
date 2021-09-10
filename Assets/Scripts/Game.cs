@@ -23,6 +23,8 @@ public class Game : MonoBehaviour
     private GameObject nextPlayerPopup;
     private NextPlayer nextPlayerButton;
 
+    private GameObject arrow;
+
     private int sortingOrder = 10000;
 
     private List<CardDescriptor> allCards = new List<CardDescriptor>();
@@ -46,7 +48,19 @@ public class Game : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         wishPopup = GameObject.Find("Wish");
         wishPopup.SetActive(false);
+        arrow = GameObject.Find("Arrow");
+        HideArrow();
         CreatePlayers();
+    }
+
+    public void HideArrow()
+    {
+        arrow.SetActive(false);
+    }
+
+    public void ShowArrow(bool visible = true)
+    {
+        arrow.SetActive(visible);
     }
 
     public void PlayerPresent()

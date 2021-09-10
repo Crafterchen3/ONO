@@ -8,6 +8,7 @@ TagManager:
   - WIsh
   - playerName
   - nextPlayerPopup
+  - arrow
   layers:
   - Default
   - TransparentFX
