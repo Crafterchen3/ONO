@@ -23,6 +23,9 @@ public class Game : MonoBehaviour
     private GameObject nextPlayerPopup;
     private NextPlayer nextPlayerButton;
 
+    private GameObject playerWinsPopup;
+    private PlayerWins playerWinsDialog;
+
     private GameObject arrow;
 
     private int sortingOrder = 10000;
@@ -76,6 +79,12 @@ public class Game : MonoBehaviour
         nextPlayerButton = nextPlayer;
         if ((seatedPlayers == numberOfPlayers) && (nextPlayerPopup != null))
             Initialize();
+    }
+
+    public void PlayerWinsPopupPresent(PlayerWins playerWins, GameObject gameObject)
+    {
+        playerWinsPopup = gameObject;
+        playerWinsDialog = playerWins;
     }
 
     private void Initialize()
@@ -181,9 +190,8 @@ public class Game : MonoBehaviour
             {
                 CardDescriptor top = unplayedCards[unplayedCards.Count - 1];
                 unplayedCards.RemoveAt(unplayedCards.Count - 1);
-                if (top.Special || (top.Number > 9))
-                    playedCards.Add(top);
-                else
+                playedCards.Add(top);
+                if (!top.Special && (top.Number <= 9))
                     cardOnTop = top;
             }
         } while (cardOnTop == null);
@@ -203,12 +211,13 @@ public class Game : MonoBehaviour
         return result;
     }
 
-    public bool PlayCard(CardDescriptor cardDescriptor, Sprite cardFace)
+    public bool TryPlayCard(CardDescriptor cardDescriptor, Sprite cardFace)
     {
         if (cardDescriptor.valid)
         {
             currentPlayer.cardsOfPlayer.Remove(cardDescriptor);
             playedCards.Add(cardDescriptor);
+            RemoveCard(cardDescriptor);
             spriteRenderer.sprite = cardFace;
             cardOnTop = cardDescriptor;
             if (cardDescriptor.Special)
@@ -244,6 +253,35 @@ public class Game : MonoBehaviour
             return true;
         }
         return false;
+    }
+
+
+    private void RemoveCard(CardDescriptor cardDescriptor)
+    {
+        foreach (GameObject c in renderedCards)
+        {
+            Card card = c.GetComponent<Card>();
+            if (card.CardDescriptor == cardDescriptor)
+            {
+                Destroy(c);
+                renderedCards.Remove(c);
+                break;
+            }
+        }
+
+    }
+
+    public void VisualizeValidity(CardDescriptor descriptor)
+    {
+        foreach (GameObject c in renderedCards)
+        {
+            Card card = c.GetComponent<Card>();
+            if (card.CardDescriptor == descriptor)
+            {
+                card.VisualizeValidity();
+                break;
+            }
+        }
     }
 
     public void DrawCard()
@@ -292,18 +330,24 @@ public class Game : MonoBehaviour
             nextPlayerButton.Show(currentPlayer.playerName);
         }
         else
+        {
             currentPlayer.SetPlayerActive(true);
+            if (renderedCards.Count > 0)
+                foreach (BoxCollider2D c in renderedCards[0].GetComponents<BoxCollider2D>())
+                    c.enabled = true; // react on click on the right side of the most-left card
+        }
     }
 
     private void CurrentPlayerWins()
     {
+        playerWinsDialog.Show(currentPlayer.playerName);
     }
 
     public void HideCards()
     {
         while (renderedCards.Count > 0)
         {
-            GameObject.Destroy(renderedCards[0]);
+            Destroy(renderedCards[0]);
             renderedCards.RemoveAt(0);
         }
     }
@@ -321,7 +365,7 @@ public class Game : MonoBehaviour
 
         if (renderedCards.Count == 0)
             foreach (BoxCollider2D c in clone.GetComponents<BoxCollider2D>())
-                c.enabled = true; // react on click on the right side of the card
+                c.enabled = true; // react on click on the right side of the most-left card
 
         SpriteRenderer sr = clone.GetComponent<SpriteRenderer>();
         sr.sortingOrder = sortingOrder;
@@ -341,15 +385,14 @@ public class Game : MonoBehaviour
             RenderNewCard(newCardsQueue[0]);
             newCardsQueue.RemoveAt(0);
         }
-
     }
 
     public Sprite GetCardFace(int color, int number)
     {
-        // red:    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, skip, exchange, +2, special  
-        // yellow: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, skip, exchange, +2, special  
-        // green:  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, skip, exchange, +2, special  
-        // blue:   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, skip, exchange, +2, special  
+        // red:    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, skip, change dir, +2, special  
+        // yellow: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, skip, change dir, +2, special  
+        // green:  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, skip, change dir, +2, special  
+        // blue:   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, skip, change dir, +2, special  
 
         int index = (color - 1) * 14 + number;
 
@@ -405,4 +448,30 @@ public class Game : MonoBehaviour
         nextPlayerPopup.SetActive(false);
         currentPlayer.SetPlayerActive(true);
     }
+
+    public void NextRound()
+    {
+        playerWinsPopup.SetActive(false);
+        allCards.Clear();
+        foreach (Player p in players)
+        {
+            allCards.AddRange(p.cardsOfPlayer);
+            p.Reset();
+        }
+        allCards.AddRange(playedCards);
+        allCards.AddRange(unplayedCards);
+        playedCards.Clear();
+        unplayedCards.Clear();
+        DistributeCards();
+        ChooseTopCard();
+        spriteRenderer.sprite = GetCardFace(cardOnTop);
+        NextPlayer();
+    }
+
+    public void Quit()
+    {
+        playerWinsPopup.SetActive(false);
+        Application.Quit();
+    }
+
 }

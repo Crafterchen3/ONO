@@ -85,6 +85,7 @@ public class Player : MonoBehaviour
             else
                 c.valid = ONO.DoCardsMatch(c, game.cardOnTop);
             result = result || c.valid;
+            game.VisualizeValidity(c);
         }
         return result;
     }
@@ -158,4 +159,16 @@ public class Player : MonoBehaviour
         backSides.Add(clone);
     }
 
+    public void Reset()
+    {
+        for (int i = 0; i < cardsOfPlayer.Count; i++)
+        {
+            GameObject.Destroy(backSides[0]);
+            backSides.RemoveAt(0);
+        }
+        text.color = inactiveColor;
+        drawingAllowed = true;
+        isActivePlayer = false;
+        cardsOfPlayer.Clear();
+    }
 }
