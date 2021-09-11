@@ -1,8 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CardDescriptor 
+public class CardDescriptor : IComparable<CardDescriptor>
 {
     public int Color;
     public bool Special;
@@ -39,4 +40,20 @@ public class CardDescriptor
         Special = true;
     }
 
+    public int CompareTo(CardDescriptor other)
+    {
+        // A null value means that this object is greater.
+        if (other == null)
+            return 1;
+        else if (Special && !other.Special)
+            return -1;
+        else if (!Special && other.Special)
+            return 1;
+        else if (Special)
+            return -1 * Number.CompareTo(other.Number);
+        else if (Color == other.Color)
+            return -1 * Number.CompareTo(other.Number);
+        else
+            return -1 * Color.CompareTo(other.Color);
+    }
 }

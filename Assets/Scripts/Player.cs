@@ -53,12 +53,15 @@ public class Player : MonoBehaviour
         {
             text.color = activeColor;
             if (!isActivePlayer)
+            {
+                cardsOfPlayer.Sort();
                 for (int i = 0; i < cardsOfPlayer.Count; i++)
                 {
                     GameObject.Destroy(backSides[0]);
                     backSides.RemoveAt(0);
                     game.ShowCard(cardsOfPlayer[i]);
                 }
+            }
             isActivePlayer = true;
             drawingAllowed = true;
             game.ShowArrow(!ComputeCardValidity());
