@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
-public class NextPlayer : MonoBehaviour
+public class PlayerWins : MonoBehaviour
 {
     private TMP_Text text;
 
@@ -15,7 +15,7 @@ public class NextPlayer : MonoBehaviour
                 text = t;
         GameObject controllerObject = GameObject.FindGameObjectWithTag("game");
         Game game = controllerObject.GetComponent<Game>();
-        game.NextPlayerPopupPresent(this, gameObject);
+        game.PlayerWinsPopupPresent(this, gameObject);
         gameObject.SetActive(false);
     }
 

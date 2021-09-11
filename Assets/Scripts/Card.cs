@@ -4,9 +4,12 @@ using UnityEngine;
 
 public class Card : MonoBehaviour
 {
+    public CardDescriptor CardDescriptor;
+
     private Game game;
-    private CardDescriptor cardDescriptor;
     private SpriteRenderer spriteRenderer;
+    private Color validColor = new Color32(255, 255, 255, 255);
+    private Color invalidColor = new Color32(128, 128, 128, 255);
 
 
     // Start is called before the first frame update
@@ -27,19 +30,26 @@ public class Card : MonoBehaviour
 
     public void SetDescriptor(CardDescriptor cardDescriptor)
     {
-        this.cardDescriptor = cardDescriptor;
+        this.CardDescriptor = cardDescriptor;
         Render();
     }
 
     private void Render()
     {
-        if ((cardDescriptor != null) && (game != null))
-            spriteRenderer.sprite = game.GetCardFace(cardDescriptor);
+        if ((CardDescriptor != null) && (game != null))
+        {
+            spriteRenderer.sprite = game.GetCardFace(CardDescriptor);
+            VisualizeValidity();
+        }
+    }
+
+    public void VisualizeValidity()
+    {
+        spriteRenderer.color = (CardDescriptor.valid) ? validColor : invalidColor;
     }
 
     void OnMouseDown()
     {
-        if (game.PlayCard(cardDescriptor, spriteRenderer.sprite))
-            Destroy(base.gameObject);
+        game.TryPlayCard(CardDescriptor, spriteRenderer.sprite);
     }
 }

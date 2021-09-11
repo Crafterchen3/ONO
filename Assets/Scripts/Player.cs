@@ -14,6 +14,8 @@ public class Player : MonoBehaviour
     public float endMoveDelay = 0.5f;
     public int numberOfCardsToDraw = 1;
 
+    private int sortingOrder = 10000;
+
     private int newCardsCount;
 
     private Game game;
@@ -21,8 +23,8 @@ public class Player : MonoBehaviour
     private TMP_Text text;
     private List<GameObject> backSides = new List<GameObject>();
 
-    private Color activeColor = new Color32(255, 0, 0, 255);
-    private Color inactiveColor = new Color32(255, 255, 0, 255);
+    private Color inactiveColor = new Color32(255, 0, 0, 255);
+    private Color activeColor = new Color32(255, 255, 0, 255);
 
     private bool drawingAllowed = true;
 
@@ -49,6 +51,7 @@ public class Player : MonoBehaviour
     {
         if (active)
         {
+            text.color = activeColor;
             if (!isActivePlayer)
                 for (int i = 0; i < cardsOfPlayer.Count; i++)
                 {
@@ -58,13 +61,13 @@ public class Player : MonoBehaviour
                 }
             isActivePlayer = true;
             drawingAllowed = true;
-            ComputeCardValidity();
+            game.ShowArrow(!ComputeCardValidity());
             if ((cardsOfPlayer.Count == 1) && !onoPressed)
                 Draw(2);
         }
         else
         {
-            text.faceColor = inactiveColor;
+            text.color = inactiveColor;
             game.HideCards();
             newCardsCount = cardsOfPlayer.Count;
             isActivePlayer = false;
@@ -82,6 +85,7 @@ public class Player : MonoBehaviour
             else
                 c.valid = ONO.DoCardsMatch(c, game.cardOnTop);
             result = result || c.valid;
+            game.VisualizeValidity(c);
         }
         return result;
     }
@@ -135,6 +139,7 @@ public class Player : MonoBehaviour
         onoPressed = false;
         if (isActivePlayer)
         {
+            game.HideArrow();
             drawingAllowed = false;
             numberOfCardsToDraw = 1;
             if (!ComputeCardValidity())
@@ -146,7 +151,24 @@ public class Player : MonoBehaviour
     private void RenderNewCard()
     {
         GameObject clone = Instantiate(cardBacksidePrefab, new Vector3(gameObject.transform.position.x + 0.1f, gameObject.transform.position.y + 0.04f, 0f), Quaternion.identity);
+        
+        SpriteRenderer sr = clone.GetComponent<SpriteRenderer>();
+        sr.sortingOrder = sortingOrder;
+        sortingOrder--;
+
         backSides.Add(clone);
     }
 
+    public void Reset()
+    {
+        for (int i = 0; i < cardsOfPlayer.Count; i++)
+        {
+            GameObject.Destroy(backSides[0]);
+            backSides.RemoveAt(0);
+        }
+        text.color = inactiveColor;
+        drawingAllowed = true;
+        isActivePlayer = false;
+        cardsOfPlayer.Clear();
+    }
 }
