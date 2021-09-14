@@ -28,8 +28,8 @@ public class ONO : MonoBehaviour
 
     public static bool DoCardsMatch(CardDescriptor card1, CardDescriptor card2)
     {
-        
-        if (card1.Color == card2.Color || card1.Color == 0)
+        // obsolete
+        if (card1.Color == card2.Color)
         {
             return true;
         }

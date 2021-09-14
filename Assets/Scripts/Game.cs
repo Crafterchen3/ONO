@@ -39,6 +39,8 @@ public class Game : MonoBehaviour
     private Vector3[] playerPositions = new Vector3[maxPlayers];
 
     private List<Player> players = new List<Player>();
+    private List<GameObject> playerGameObjects = new List<GameObject>();
+
     private Player currentPlayer;
     private int currentPlayerIndex = -1;
     private bool directionIsClockwise = true;
@@ -53,7 +55,7 @@ public class Game : MonoBehaviour
         wishPopup.SetActive(false);
         arrow = GameObject.Find("Arrow");
         HideArrow();
-        CreatePlayers();
+        CreatePlayerPositions();
     }
 
     public void HideArrow()
@@ -64,6 +66,17 @@ public class Game : MonoBehaviour
     public void ShowArrow(bool visible = true)
     {
         arrow.SetActive(visible);
+    }
+
+    public void PrepareNewGame(int noOfPlayers)
+    {
+        numberOfPlayers = noOfPlayers;
+        players.Clear();
+        foreach (GameObject g in playerGameObjects)
+            Destroy(g);
+        playerGameObjects.Clear();
+        playedCards.Clear();
+        unplayedCards.Clear();
     }
 
     public void PlayerPresent()
@@ -96,28 +109,29 @@ public class Game : MonoBehaviour
         NextPlayer();
     }
 
-    private Player CreatePlayer(int pos, string name)
+    public void CreatePlayer(int pos, string name)
     {
         GameObject clone = Instantiate(playerPrefab, playerPositions[pos], Quaternion.identity);
         Player result = clone.GetComponent<Player>();
         result.SetName(name);
-        return result;
+        players.Add(result);
+        playerGameObjects.Add(clone);
     }
 
 
-    private void CreatePlayers()
+    private void CreatePlayerPositions()
     {
-        playerPositions[0] = new Vector3(-9.5f, 3f, 0f);
-        playerPositions[1] = new Vector3(-4f, 3f, 0f);
-        playerPositions[2] = new Vector3(1.5f, 3f, 0f);
-
-        players.Add(CreatePlayer(0, "Thomas"));
-        players.Add(CreatePlayer(1, "Paul"));
-        players.Add(CreatePlayer(2, "Benjamin"));
+        playerPositions[0] = new Vector3(-10f, 3f, 0f);
+        playerPositions[1] = new Vector3(-4.5f, 3f, 0f);
+        playerPositions[2] = new Vector3(1f, 3f, 0f);
+        playerPositions[3] = new Vector3(6.5f, 3f, 0f);
+        playerPositions[4] = new Vector3(-10f, -0.5f, 0f);
+        playerPositions[5] = new Vector3(6.5f, -0.5f, 0f);
     }
 
     private void CreateCards()
     {
+        allCards.Clear();
         for (int c = 0; c < 18; c++)
             for (int color = 1; color <= 4; color++)
             {
@@ -223,8 +237,8 @@ public class Game : MonoBehaviour
             if (cardDescriptor.Special)
             {
                 if (cardDescriptor.Number == CardDescriptor.WISHPLUS4)
-                    GetNextPlayer().numberOfCardsToDraw = currentPlayer.numberOfCardsToDraw == 1 ? 4 : currentPlayer.numberOfCardsToDraw + 4;
-                currentPlayer.numberOfCardsToDraw = 1;
+                    GetNextPlayer().NoOfCardsToDraw = currentPlayer.NoOfCardsToDraw == 1 ? 4 : currentPlayer.NoOfCardsToDraw + 4;
+                currentPlayer.NoOfCardsToDraw = 1;
                 wishPopup.SetActive(true);
             }
             else
@@ -232,8 +246,8 @@ public class Game : MonoBehaviour
                 switch (cardDescriptor.Number)
                 {
                     case CardDescriptor.PLUS2:
-                        GetNextPlayer().numberOfCardsToDraw = currentPlayer.numberOfCardsToDraw == 1 ? 2 : currentPlayer.numberOfCardsToDraw + 2;
-                        currentPlayer.numberOfCardsToDraw = 1;
+                        GetNextPlayer().NoOfCardsToDraw = currentPlayer.NoOfCardsToDraw == 1 ? 2 : currentPlayer.NoOfCardsToDraw + 2;
+                        currentPlayer.NoOfCardsToDraw = 1;
                         break;
                     case CardDescriptor.CHANGE_DIR:
                         if (numberOfPlayers < 3)
@@ -288,8 +302,8 @@ public class Game : MonoBehaviour
     {
         if ((currentPlayer != null) && currentPlayer.isActivePlayer)
         {
-            currentPlayer.Draw(currentPlayer.numberOfCardsToDraw);
-            currentPlayer.numberOfCardsToDraw = 1;
+            currentPlayer.Draw(currentPlayer.NoOfCardsToDraw);
+            currentPlayer.NoOfCardsToDraw = 1;
         }
     }
 
@@ -440,7 +454,7 @@ public class Game : MonoBehaviour
     public void OnoPressed()
     {
         if (currentPlayer != null)
-            currentPlayer.onoPressed = true;
+            currentPlayer.OnoPressed = true;
     }
 
     public void NextPlayerIsReady()

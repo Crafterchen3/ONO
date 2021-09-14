@@ -56,4 +56,14 @@ public class CardDescriptor : IComparable<CardDescriptor>
         else
             return -1 * Color.CompareTo(other.Color);
     }
+
+    public bool CanBePlayed(CardDescriptor cardOnTop)
+    {
+        if (Special)
+            return (true);
+        if (cardOnTop.Special)
+            return Color == cardOnTop.Color;
+        else
+            return (Color == cardOnTop.Color) || (Number == cardOnTop.Number);
+    }
 }

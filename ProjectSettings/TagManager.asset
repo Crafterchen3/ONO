@@ -9,6 +9,7 @@ TagManager:
   - playerName
   - nextPlayerPopup
   - arrow
+  - message
   layers:
   - Default
   - TransparentFX

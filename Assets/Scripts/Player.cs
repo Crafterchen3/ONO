@@ -6,13 +6,16 @@ using TMPro;
 
 public class Player : MonoBehaviour
 {
-    public bool onoPressed = false;
+    private bool _onoPressed = false;
+    public bool OnoPressed { get { return _onoPressed; } set { _onoPressed = value; RenderMessage(); } }
     public bool isActivePlayer = false;
     public GameObject cardBacksidePrefab;
     public List<CardDescriptor> cardsOfPlayer = new List<CardDescriptor>();
     public string playerName;
     public float endMoveDelay = 0.5f;
-    public int numberOfCardsToDraw = 1;
+
+    private int _noOfCardsToDraw = 1;
+    public int NoOfCardsToDraw { get { return _noOfCardsToDraw; } set { SetNoOfCardsToDraw(value); } }
 
     private int sortingOrder = 10000;
 
@@ -20,10 +23,12 @@ public class Player : MonoBehaviour
 
     private Game game;
 
-    private TMP_Text text;
+    private TMP_Text playerNameText;
+    private TMP_Text messageText;
+
     private List<GameObject> backSides = new List<GameObject>();
 
-    private Color inactiveColor = new Color32(255, 0, 0, 255);
+    private Color inactiveColor = new Color32(255, 157, 0, 255);
     private Color activeColor = new Color32(255, 255, 0, 255);
 
     private bool drawingAllowed = true;
@@ -36,22 +41,53 @@ public class Player : MonoBehaviour
         GameObject controllerObject = GameObject.FindGameObjectWithTag("game");
         game = controllerObject.GetComponent<Game>();
 
-        text = gameObject.GetComponentInChildren<TMP_Text>();
+        foreach (TMP_Text t in gameObject.GetComponentsInChildren<TMP_Text>())
+        {
+            if (t.tag == "playerName")
+                playerNameText = t;
+            else if (t.tag == "message")
+                messageText = t;
+        }
+
         RenderName();
         game.PlayerPresent();
     }
 
     private void RenderName()
     {
-        if ((playerName != null) && (text != null))
-            text.text = playerName;
+        if ((playerName != null) && (playerNameText != null))
+            playerNameText.text = playerName;
+    }
+
+    private void SetNoOfCardsToDraw(int cards)
+    {
+        _noOfCardsToDraw = cards;
+        RenderMessage();
+    }
+
+    private void RenderMessage()
+    {
+        messageText.text = "";
+        if (cardsOfPlayer.Count == 1)
+            if (OnoPressed)
+                messageText.text = "Last card!";
+            else
+                messageText.text = "ONO penalty!";
+        else if ((cardsOfPlayer.Count == 2) && OnoPressed)
+            messageText.text = "ONO!";
+
+        if (_noOfCardsToDraw > 1)
+            if (messageText.text.Length == 0)
+                messageText.text = "+" + _noOfCardsToDraw.ToString();
+            else
+                messageText.text = messageText.text + ", +" + _noOfCardsToDraw.ToString();
     }
 
     public void SetPlayerActive(bool active)
     {
         if (active)
         {
-            text.color = activeColor;
+            playerNameText.color = activeColor;
             if (!isActivePlayer)
             {
                 cardsOfPlayer.Sort();
@@ -65,15 +101,17 @@ public class Player : MonoBehaviour
             isActivePlayer = true;
             drawingAllowed = true;
             game.ShowArrow(!ComputeCardValidity());
-            if ((cardsOfPlayer.Count == 1) && !onoPressed)
+            if ((cardsOfPlayer.Count == 1) && !OnoPressed)
                 Draw(2);
+            RenderMessage();
         }
         else
         {
-            text.color = inactiveColor;
+            playerNameText.color = inactiveColor;
             game.HideCards();
             newCardsCount = cardsOfPlayer.Count;
             isActivePlayer = false;
+            RenderMessage();
         }
 
     }
@@ -83,10 +121,10 @@ public class Player : MonoBehaviour
         bool result = false;
         foreach (CardDescriptor c in cardsOfPlayer)
         {
-            if (numberOfCardsToDraw > 1)
+            if (_noOfCardsToDraw > 1)
                 c.valid = ((c.Special == game.cardOnTop.Special) && (c.Number == game.cardOnTop.Number)); // both plus2 or plus4
             else
-                c.valid = ONO.DoCardsMatch(c, game.cardOnTop);
+                c.valid = c.CanBePlayed(game.cardOnTop);
             result = result || c.valid;
             game.VisualizeValidity(c);
         }
@@ -139,14 +177,15 @@ public class Player : MonoBehaviour
             else
                 newCardsCount++;
         }
-        onoPressed = false;
+        OnoPressed = false;
         if (isActivePlayer)
         {
             game.HideArrow();
             drawingAllowed = false;
-            numberOfCardsToDraw = 1;
+            _noOfCardsToDraw = 1;
             if (!ComputeCardValidity())
                 ScheduleDelayedEndMove();
+            RenderMessage();
         }
     }
 
@@ -154,7 +193,7 @@ public class Player : MonoBehaviour
     private void RenderNewCard()
     {
         GameObject clone = Instantiate(cardBacksidePrefab, new Vector3(gameObject.transform.position.x + 0.1f, gameObject.transform.position.y + 0.04f, 0f), Quaternion.identity);
-        
+
         SpriteRenderer sr = clone.GetComponent<SpriteRenderer>();
         sr.sortingOrder = sortingOrder;
         sortingOrder--;
@@ -169,9 +208,10 @@ public class Player : MonoBehaviour
             GameObject.Destroy(backSides[0]);
             backSides.RemoveAt(0);
         }
-        text.color = inactiveColor;
+        playerNameText.color = inactiveColor;
         drawingAllowed = true;
         isActivePlayer = false;
         cardsOfPlayer.Clear();
+        RenderMessage();
     }
 }
