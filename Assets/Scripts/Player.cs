@@ -8,6 +8,10 @@ public class Player : MonoBehaviour
 {
     private bool _onoPressed = false;
     public bool OnoPressed { get { return _onoPressed; } set { _onoPressed = value; RenderMessage(); } }
+
+    private bool _skipped = false;
+    public bool Skipped { get { return _skipped; } set { _skipped = value; RenderMessage(); } }
+
     public bool isActivePlayer = false;
     public GameObject cardBacksidePrefab;
     public List<CardDescriptor> cardsOfPlayer = new List<CardDescriptor>();
@@ -34,6 +38,8 @@ public class Player : MonoBehaviour
     private bool drawingAllowed = true;
 
     private bool delayedEndMove;
+
+    public int wonGames = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -81,6 +87,12 @@ public class Player : MonoBehaviour
                 messageText.text = "+" + _noOfCardsToDraw.ToString();
             else
                 messageText.text = messageText.text + ", +" + _noOfCardsToDraw.ToString();
+
+        if (_skipped)
+            if (messageText.text.Length == 0)
+                messageText.text = "Skipped";
+            else
+                messageText.text = messageText.text + ", skipped";
     }
 
     public void SetPlayerActive(bool active)
@@ -214,4 +226,15 @@ public class Player : MonoBehaviour
         cardsOfPlayer.Clear();
         RenderMessage();
     }
+
+    private void OnDestroy()
+    {
+        while (backSides.Count > 0)
+        {
+            Destroy(backSides[0]);
+            backSides.RemoveAt(0);
+        }
+
+    }
+
 }

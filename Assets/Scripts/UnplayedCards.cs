@@ -4,24 +4,16 @@ using UnityEngine;
 
 public class UnplayedCards : MonoBehaviour
 {
-    private Game game;
-
     // Start is called before the first frame update
     void Start()
     {
-        GameObject gameObject = GameObject.FindGameObjectWithTag("game");
-        game = gameObject.GetComponent<Game>();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        gameObject.SetActive(false);
+        ONO.Current.UnplayedCardsPresent(gameObject);
     }
 
     void OnMouseDown()
     {
-        game.DrawCard();
+        ONO.Current.game.DrawCard();
     }
 
 }

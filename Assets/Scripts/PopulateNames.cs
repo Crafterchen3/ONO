@@ -6,10 +6,14 @@ using TMPro;
 public class PopulateNames : MonoBehaviour
 {
     public GameObject PlayerNamePrefab;
+    private Game game;
 
     // Start is called before the first frame update
     void Start()
     {
+        GameObject controllerObject = GameObject.FindGameObjectWithTag("game");
+        game = controllerObject.GetComponent<Game>();
+
         Populate();
     }
 
@@ -22,10 +26,8 @@ public class PopulateNames : MonoBehaviour
 
     void Populate()
     {
-        RenderPlayer("Benjamin");
-        RenderPlayer("Bettina");
-        RenderPlayer("Paul");
-        RenderPlayer("Thomas");
+        foreach (string n in game.highScoreHistory.GetAllNames())
+            RenderPlayer(n);
     }
 
 }

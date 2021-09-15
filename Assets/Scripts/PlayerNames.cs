@@ -36,8 +36,6 @@ public class PlayerNames : MonoBehaviour
     GameObject ChoosePlayer5GO;
     GameObject ChoosePlayer6GO;
 
-    GameObject PlayerChooserGO;
-
     // Start is called before the first frame update
     void Start()
     {
@@ -63,11 +61,10 @@ public class PlayerNames : MonoBehaviour
         ChoosePlayer6GO = GameObject.Find("ChoosePlayer6");
 
         HideUnhide();
-    }
 
-    public void NameChooserPresent(GameObject chooser)
-    {
-        PlayerChooserGO = chooser;
+        gameObject.SetActive(false);
+
+        ONO.Current.PlayerNamesPopupPresent(this, gameObject);
     }
 
     private void HideUnhide()
@@ -107,7 +104,7 @@ public class PlayerNames : MonoBehaviour
         public void ChoosePlayer(int playerNo)
     {
         currentPlayerToChoose = playerNo;
-        PlayerChooserGO.SetActive(true);
+        ONO.Current.PlayerChooserGO.SetActive(true);
     }
 
     public void SetChosenPlayer(string name)
@@ -160,8 +157,15 @@ public class PlayerNames : MonoBehaviour
         GameObject gameGO = GameObject.Find("Game");
         Game game = gameGO.GetComponent<Game>();
         game.PrepareNewGame(NoOfPlayers);
+        bool newPlayer = false;
         for (int i = 0; i < NoOfPlayers; i++)
+        {
             game.CreatePlayer(i, GetPlayerName(i));
+            newPlayer = game.highScoreHistory.AddName(GetPlayerName(i)) || newPlayer;
+        }
+        if (newPlayer)
+            game.persistence.SaveHighScores();
+
         gameObject.SetActive(false);
     }
 

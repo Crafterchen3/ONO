@@ -18,15 +18,6 @@ public class Game : MonoBehaviour
 
     private Sprite[] allCardFaces;
     private SpriteRenderer spriteRenderer;
-    private GameObject wishPopup;
-
-    private GameObject nextPlayerPopup;
-    private NextPlayer nextPlayerButton;
-
-    private GameObject playerWinsPopup;
-    private PlayerWins playerWinsDialog;
-
-    private GameObject arrow;
 
     private int sortingOrder = 10000;
 
@@ -38,7 +29,7 @@ public class Game : MonoBehaviour
 
     private Vector3[] playerPositions = new Vector3[maxPlayers];
 
-    private List<Player> players = new List<Player>();
+    public List<Player> players = new List<Player>();
     private List<GameObject> playerGameObjects = new List<GameObject>();
 
     private Player currentPlayer;
@@ -46,26 +37,47 @@ public class Game : MonoBehaviour
     private bool directionIsClockwise = true;
     private int seatedPlayers = 0;
 
+    private int skippedPlayer = -1;
+
+    public HighScoreHistory highScoreHistory;
+    public Persistence persistence;
+
+
     // Start is called before the first frame update
     void Start()
     {
+        gameObject.SetActive(false);
         allCardFaces = Resources.LoadAll<Sprite>("Textures/Cards/Cards");
         spriteRenderer = GetComponent<SpriteRenderer>();
-        wishPopup = GameObject.Find("Wish");
-        wishPopup.SetActive(false);
-        arrow = GameObject.Find("Arrow");
-        HideArrow();
+        persistence = new Persistence(this);
+        highScoreHistory = persistence.LoadHighScores();
         CreatePlayerPositions();
+        ONO.Current.GameControlPresent(this, gameObject);
+    }
+
+    public void Show()
+    {
+        ONO.Current.onoButton.SetActive(true);
+        ONO.Current.unplayedCards.SetActive(true);
+        gameObject.SetActive(true);
+    }
+
+    public void Hide()
+    {
+        PrepareNewGame(1); // > 0, so that the game does not start
+        ONO.Current.onoButton.SetActive(false);
+        ONO.Current.unplayedCards.SetActive(false);
+        gameObject.SetActive(false);
     }
 
     public void HideArrow()
     {
-        arrow.SetActive(false);
+        ONO.Current.arrow.SetActive(false);
     }
 
     public void ShowArrow(bool visible = true)
     {
-        arrow.SetActive(visible);
+        ONO.Current.arrow.SetActive(visible);
     }
 
     public void PrepareNewGame(int noOfPlayers)
@@ -82,22 +94,8 @@ public class Game : MonoBehaviour
     public void PlayerPresent()
     {
         seatedPlayers++;
-        if ((seatedPlayers == numberOfPlayers) && (nextPlayerPopup != null))
+        if ((seatedPlayers == numberOfPlayers))
             Initialize();
-    }
-
-    public void NextPlayerPopupPresent(NextPlayer nextPlayer, GameObject nextPlayerGameObject)
-    {
-        nextPlayerPopup = nextPlayerGameObject;
-        nextPlayerButton = nextPlayer;
-        if ((seatedPlayers == numberOfPlayers) && (nextPlayerPopup != null))
-            Initialize();
-    }
-
-    public void PlayerWinsPopupPresent(PlayerWins playerWins, GameObject gameObject)
-    {
-        playerWinsPopup = gameObject;
-        playerWinsDialog = playerWins;
     }
 
     private void Initialize()
@@ -239,7 +237,7 @@ public class Game : MonoBehaviour
                 if (cardDescriptor.Number == CardDescriptor.WISHPLUS4)
                     GetNextPlayer().NoOfCardsToDraw = currentPlayer.NoOfCardsToDraw == 1 ? 4 : currentPlayer.NoOfCardsToDraw + 4;
                 currentPlayer.NoOfCardsToDraw = 1;
-                wishPopup.SetActive(true);
+                ONO.Current.wishPopup.SetActive(true);
             }
             else
             {
@@ -335,13 +333,19 @@ public class Game : MonoBehaviour
 
         int nextIndex = GetNextPlayerIndex(increment);
 
+        if (increment > 1)
+        {
+            skippedPlayer = GetNextPlayerIndex();
+            players[skippedPlayer].Skipped = true;
+        }
+
         if (nextIndex != currentPlayerIndex)
         {
             if (currentPlayer != null)
                 currentPlayer.SetPlayerActive(false);
             currentPlayerIndex = nextIndex;
             currentPlayer = players[currentPlayerIndex];
-            nextPlayerButton.Show(currentPlayer.playerName);
+            ONO.Current.nextPlayerButton.Show(currentPlayer.playerName);
         }
         else
         {
@@ -354,7 +358,11 @@ public class Game : MonoBehaviour
 
     private void CurrentPlayerWins()
     {
-        playerWinsDialog.Show(currentPlayer.playerName);
+        currentPlayer.wonGames++;
+        highScoreHistory.PlayerHasWon(currentPlayer.playerName);
+        persistence.SaveHighScores();
+
+        ONO.Current.playerWinsDialog.Show(currentPlayer.playerName);
     }
 
     public void HideCards()
@@ -432,7 +440,7 @@ public class Game : MonoBehaviour
     public void Wish(int color)
     {
         cardOnTop.Color = color;
-        wishPopup.SetActive(false);
+        ONO.Current.wishPopup.SetActive(false);
         switch (color)
         {
             case 1:
@@ -459,13 +467,24 @@ public class Game : MonoBehaviour
 
     public void NextPlayerIsReady()
     {
-        nextPlayerPopup.SetActive(false);
+        if (skippedPlayer >= 0)
+        {
+            players[skippedPlayer].Skipped = false;
+            skippedPlayer = -1;
+        }
+        ONO.Current.nextPlayerPopup.SetActive(false);
         currentPlayer.SetPlayerActive(true);
+    }
+
+    public void DisplayScore()
+    {
+        ONO.Current.playerWinsPopup.SetActive(false);
+        ONO.Current.scoreDialog.Show();
     }
 
     public void NextRound()
     {
-        playerWinsPopup.SetActive(false);
+        ONO.Current.scoreDialog.Hide();
         allCards.Clear();
         foreach (Player p in players)
         {
@@ -484,8 +503,9 @@ public class Game : MonoBehaviour
 
     public void Quit()
     {
-        playerWinsPopup.SetActive(false);
-        Application.Quit();
+        ONO.Current.scoreDialog.Hide();
+        Hide();
+        ONO.Current.launcher.Show();
     }
 
 }

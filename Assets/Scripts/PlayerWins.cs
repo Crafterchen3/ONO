@@ -10,13 +10,11 @@ public class PlayerWins : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        gameObject.SetActive(false);
         foreach (TMP_Text t in gameObject.GetComponentsInChildren<TMP_Text>())
             if (t.tag == "playerName")
                 text = t;
-        GameObject controllerObject = GameObject.FindGameObjectWithTag("game");
-        Game game = controllerObject.GetComponent<Game>();
-        game.PlayerWinsPopupPresent(this, gameObject);
-        gameObject.SetActive(false);
+        ONO.Current.PlayerWinsPopupPresent(this, gameObject);
     }
 
     public void Show(string name)
