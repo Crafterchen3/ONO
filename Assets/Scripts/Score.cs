@@ -33,37 +33,104 @@ public class Score : MonoBehaviour
     GameObject Player6PointsGO;
     TMP_Text Player6Points;
 
-    // Start is called before the first frame update
-    void Start()
+    int presentPlayers = 0;
+    int presentPlayerPoints = 0;
+
+
+    public void PlayerPresent(int index, GameObject gameObject)
     {
-        Player1GO = GameObject.Find("Player1");
-        Player1 = Player1GO.GetComponent<TMP_Text>();
-        Player2GO = GameObject.Find("Player2");
-        Player2 = Player2GO.GetComponent<TMP_Text>();
-        Player3GO = GameObject.Find("Player3");
-        Player3 = Player3GO.GetComponent<TMP_Text>();
-        Player4GO = GameObject.Find("Player4");
-        Player4 = Player4GO.GetComponent<TMP_Text>();
-        Player5GO = GameObject.Find("Player5");
-        Player5 = Player5GO.GetComponent<TMP_Text>();
-        Player6GO = GameObject.Find("Player6");
-        Player6 = Player6GO.GetComponent<TMP_Text>();
+        switch (index)
+        {
+            case 1:
+                Player1GO = gameObject;
+                Player1 = Player1GO.GetComponent<TMP_Text>();
+                presentPlayers++;
+                InstanceCheck();
+                break;
+            case 2:
+                Player2GO = gameObject;
+                Player2 = Player2GO.GetComponent<TMP_Text>();
+                presentPlayers++;
+                InstanceCheck();
+                break;
+            case 3:
+                Player3GO = gameObject;
+                Player3 = Player3GO.GetComponent<TMP_Text>();
+                presentPlayers++;
+                InstanceCheck();
+                break;
+            case 4:
+                Player4GO = gameObject;
+                Player4 = Player4GO.GetComponent<TMP_Text>();
+                presentPlayers++;
+                InstanceCheck();
+                break;
+            case 5:
+                Player5GO = gameObject;
+                Player5 = Player5GO.GetComponent<TMP_Text>();
+                presentPlayers++;
+                InstanceCheck();
+                break;
+            case 6:
+                Player6GO = gameObject;
+                Player6 = Player6GO.GetComponent<TMP_Text>();
+                presentPlayers++;
+                InstanceCheck();
+                break;
+        }
+    }
 
-        Player1PointsGO = GameObject.Find("Player1 Points");
-        Player1Points = Player1PointsGO.GetComponent<TMP_Text>();
-        Player2PointsGO = GameObject.Find("Player2 Points");
-        Player2Points = Player2PointsGO.GetComponent<TMP_Text>();
-        Player3PointsGO = GameObject.Find("Player3 Points");
-        Player3Points = Player3PointsGO.GetComponent<TMP_Text>();
-        Player4PointsGO = GameObject.Find("Player4 Points");
-        Player4Points = Player4PointsGO.GetComponent<TMP_Text>();
-        Player5PointsGO = GameObject.Find("Player5 Points");
-        Player5Points = Player5PointsGO.GetComponent<TMP_Text>();
-        Player6PointsGO = GameObject.Find("Player6 Points");
-        Player6Points = Player6PointsGO.GetComponent<TMP_Text>();
+    public void PlayerPointsPresent(int index, GameObject gameObject)
+    {
+        switch (index)
+        {
+            case 1:
+                Player1PointsGO = gameObject;
+                Player1Points = Player1PointsGO.GetComponent<TMP_Text>();
+                presentPlayerPoints++;
+                InstanceCheck();
+                break;
+            case 2:
+                Player2PointsGO = gameObject;
+                Player2Points = Player2PointsGO.GetComponent<TMP_Text>();
+                presentPlayerPoints++;
+                InstanceCheck();
+                break;
+            case 3:
+                Player3PointsGO = gameObject;
+                Player3Points = Player3PointsGO.GetComponent<TMP_Text>();
+                presentPlayerPoints++;
+                InstanceCheck();
+                break;
+            case 4:
+                Player4PointsGO = gameObject;
+                Player4Points = Player4PointsGO.GetComponent<TMP_Text>();
+                presentPlayerPoints++;
+                InstanceCheck();
+                break;
+            case 5:
+                Player5PointsGO = gameObject;
+                Player5Points = Player5PointsGO.GetComponent<TMP_Text>();
+                presentPlayerPoints++;
+                InstanceCheck();
+                break;
+            case 6:
+                Player6PointsGO = gameObject;
+                Player6Points = Player6PointsGO.GetComponent<TMP_Text>();
+                presentPlayerPoints++;
+                InstanceCheck();
+                break;
+        }
+    }
 
-        gameObject.SetActive(false);
-        ONO.Current.ScorePopupPresent(this);
+    private void InstanceCheck()
+    {
+        if ((presentPlayers == 6) && (presentPlayerPoints == 6))
+        {
+            gameObject.SetActive(false);
+            ONO.Current.ScorePopupPresent(this);
+
+        }
     }
 
     private void HideUnhide()
