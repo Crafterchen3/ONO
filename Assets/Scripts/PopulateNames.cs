@@ -20,8 +20,9 @@ public class PopulateNames : MonoBehaviour
     void RenderPlayer(string name)
     {
         GameObject clone = (GameObject)Instantiate(PlayerNamePrefab, transform);
-        TMP_Text text = clone.GetComponent<TMP_Text>();
-        text.text = name;
+        foreach (TMP_Text t in clone.GetComponentsInChildren<TMP_Text>())
+            if (t.tag == "playerName")
+                t.text = name;
     }
 
     void Populate()

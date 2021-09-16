@@ -45,6 +45,8 @@ public class ONO
 
     public GameObject PlayerChooserGO;
 
+    public Highscores highscores;
+
     private int instanceCount = 0;
 
     // Instance 1
@@ -128,10 +130,17 @@ public class ONO
         InstanceCheck();
     }
 
+    // Instance 12
+    public void HighscoresPresent(Highscores highscores)
+    {
+        this.highscores = highscores;
+        InstanceCheck();
+    }
+
     private void InstanceCheck()
     {
         instanceCount++;
-        if (instanceCount >= 11)
+        if (instanceCount >= 12)
             launcher.Show();
     }
 }

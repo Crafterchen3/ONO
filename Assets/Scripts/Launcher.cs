@@ -25,6 +25,12 @@ public class Launcher : MonoBehaviour
         gameObject.SetActive(false);
     }
 
+    public void HighScores()
+    {
+        gameObject.SetActive(false);
+        ONO.Current.highscores.Show();
+    }
+
     public void Quit()
     {
         Application.Quit();

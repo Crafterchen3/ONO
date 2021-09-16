@@ -11,9 +11,8 @@ public class PlayerName : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        playerName = gameObject.GetComponent<TMP_Text>();
-        GameObject chooserGO = GameObject.Find("Name Chooser");
-        chooser = chooserGO.GetComponent<PlayerChooser>();
+        playerName = gameObject.GetComponentInChildren<TMP_Text>();
+        chooser = ONO.Current.PlayerChooserGO.GetComponent<PlayerChooser>();
     }
 
     public void ButtonPressed()

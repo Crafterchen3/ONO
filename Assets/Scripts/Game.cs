@@ -119,9 +119,9 @@ public class Game : MonoBehaviour
 
     private void CreatePlayerPositions()
     {
-        playerPositions[0] = new Vector3(-10f, 3f, 0f);
-        playerPositions[1] = new Vector3(-4.5f, 3f, 0f);
-        playerPositions[2] = new Vector3(1f, 3f, 0f);
+        playerPositions[2] = new Vector3(-10f, 3f, 0f);
+        playerPositions[0] = new Vector3(-4.5f, 3f, 0f);
+        playerPositions[1] = new Vector3(1f, 3f, 0f);
         playerPositions[3] = new Vector3(6.5f, 3f, 0f);
         playerPositions[4] = new Vector3(-10f, -0.5f, 0f);
         playerPositions[5] = new Vector3(6.5f, -0.5f, 0f);
@@ -232,36 +232,41 @@ public class Game : MonoBehaviour
             RemoveCard(cardDescriptor);
             spriteRenderer.sprite = cardFace;
             cardOnTop = cardDescriptor;
-            if (cardDescriptor.Special)
+            if (currentPlayer.cardsOfPlayer.Count > 0)
             {
-                if (cardDescriptor.Number == CardDescriptor.WISHPLUS4)
-                    GetNextPlayer().NoOfCardsToDraw = currentPlayer.NoOfCardsToDraw == 1 ? 4 : currentPlayer.NoOfCardsToDraw + 4;
-                currentPlayer.NoOfCardsToDraw = 1;
-                ONO.Current.wishPopup.SetActive(true);
-            }
-            else
-            {
-                switch (cardDescriptor.Number)
+                if (cardDescriptor.Special)
                 {
-                    case CardDescriptor.PLUS2:
-                        GetNextPlayer().NoOfCardsToDraw = currentPlayer.NoOfCardsToDraw == 1 ? 2 : currentPlayer.NoOfCardsToDraw + 2;
-                        currentPlayer.NoOfCardsToDraw = 1;
-                        break;
-                    case CardDescriptor.CHANGE_DIR:
-                        if (numberOfPlayers < 3)
-                        {
+                    if (cardDescriptor.Number == CardDescriptor.WISHPLUS4)
+                        GetNextPlayer().NoOfCardsToDraw = currentPlayer.NoOfCardsToDraw == 1 ? 4 : currentPlayer.NoOfCardsToDraw + 4;
+                    currentPlayer.NoOfCardsToDraw = 1;
+                    ONO.Current.wishPopup.SetActive(true);
+                }
+                else
+                {
+                    switch (cardDescriptor.Number)
+                    {
+                        case CardDescriptor.PLUS2:
+                            GetNextPlayer().NoOfCardsToDraw = currentPlayer.NoOfCardsToDraw == 1 ? 2 : currentPlayer.NoOfCardsToDraw + 2;
+                            currentPlayer.NoOfCardsToDraw = 1;
+                            break;
+                        case CardDescriptor.CHANGE_DIR:
+                            if (numberOfPlayers < 3)
+                            {
+                                NextPlayer(2);
+                                return true;
+                            }
+                            else
+                                directionIsClockwise = !directionIsClockwise;
+                            break;
+                        case CardDescriptor.SKIP:
                             NextPlayer(2);
                             return true;
-                        }
-                        else
-                            directionIsClockwise = !directionIsClockwise;
-                        break;
-                    case CardDescriptor.SKIP:
-                        NextPlayer(2);
-                        return true;
+                    }
+                    NextPlayer();
                 }
-                NextPlayer();
             }
+            else
+                NextPlayer(); // this will end the game
             return true;
         }
         return false;

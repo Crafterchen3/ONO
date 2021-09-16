@@ -8,9 +8,16 @@ public class HighScoreHistory
     public List<string> GetAllNames()
     {
         List<string> result = new List<string>();
+        highScores.Sort(new HighScore.NameComparer());
         foreach (HighScore h in highScores)
             result.Add(h.playerName);
         return (result);
+    }
+
+    public List<HighScore> GetHighscores()
+    {
+        highScores.Sort(new HighScore.ScoreComparer());
+        return (highScores);
     }
 
     public HighScore GetHighScore(string name)
@@ -20,7 +27,7 @@ public class HighScoreHistory
 
     public bool AddName(string name)
     {
-        if (GetHighScore(name) != null)
+        if (string.IsNullOrEmpty(name) || (GetHighScore(name) != null))
             return false;
         highScores.Add(new HighScore() { playerName = name });
         return true;

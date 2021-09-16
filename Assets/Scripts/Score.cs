@@ -44,40 +44,30 @@ public class Score : MonoBehaviour
             case 1:
                 Player1GO = gameObject;
                 Player1 = Player1GO.GetComponent<TMP_Text>();
-                presentPlayers++;
-                InstanceCheck();
                 break;
             case 2:
                 Player2GO = gameObject;
                 Player2 = Player2GO.GetComponent<TMP_Text>();
-                presentPlayers++;
-                InstanceCheck();
                 break;
             case 3:
                 Player3GO = gameObject;
                 Player3 = Player3GO.GetComponent<TMP_Text>();
-                presentPlayers++;
-                InstanceCheck();
                 break;
             case 4:
                 Player4GO = gameObject;
                 Player4 = Player4GO.GetComponent<TMP_Text>();
-                presentPlayers++;
-                InstanceCheck();
                 break;
             case 5:
                 Player5GO = gameObject;
                 Player5 = Player5GO.GetComponent<TMP_Text>();
-                presentPlayers++;
-                InstanceCheck();
                 break;
             case 6:
                 Player6GO = gameObject;
                 Player6 = Player6GO.GetComponent<TMP_Text>();
-                presentPlayers++;
-                InstanceCheck();
                 break;
         }
+        presentPlayers++;
+        InstanceCheck();
     }
 
     public void PlayerPointsPresent(int index, GameObject gameObject)
@@ -87,40 +77,30 @@ public class Score : MonoBehaviour
             case 1:
                 Player1PointsGO = gameObject;
                 Player1Points = Player1PointsGO.GetComponent<TMP_Text>();
-                presentPlayerPoints++;
-                InstanceCheck();
                 break;
             case 2:
                 Player2PointsGO = gameObject;
                 Player2Points = Player2PointsGO.GetComponent<TMP_Text>();
-                presentPlayerPoints++;
-                InstanceCheck();
                 break;
             case 3:
                 Player3PointsGO = gameObject;
                 Player3Points = Player3PointsGO.GetComponent<TMP_Text>();
-                presentPlayerPoints++;
-                InstanceCheck();
-                break;
+                 break;
             case 4:
                 Player4PointsGO = gameObject;
                 Player4Points = Player4PointsGO.GetComponent<TMP_Text>();
-                presentPlayerPoints++;
-                InstanceCheck();
                 break;
             case 5:
                 Player5PointsGO = gameObject;
                 Player5Points = Player5PointsGO.GetComponent<TMP_Text>();
-                presentPlayerPoints++;
-                InstanceCheck();
-                break;
+                 break;
             case 6:
                 Player6PointsGO = gameObject;
                 Player6Points = Player6PointsGO.GetComponent<TMP_Text>();
-                presentPlayerPoints++;
-                InstanceCheck();
-                break;
+                 break;
         }
+        presentPlayerPoints++;
+        InstanceCheck();
     }
 
     private void InstanceCheck()
