@@ -32,14 +32,15 @@ public class Player : MonoBehaviour
 
     private List<GameObject> backSides = new List<GameObject>();
 
-    private Color inactiveColor = new Color32(255, 157, 0, 255);
-    private Color activeColor = new Color32(255, 255, 0, 255);
-
     private bool drawingAllowed = true;
 
     private bool delayedEndMove;
 
-    public int wonGames = 0;
+    private int _wonGames = 0;
+    private bool _isWinner = false;
+
+    public int WonGames { get { return _wonGames; } }
+    public bool IsWinner { get { return _isWinner; } }
 
     // Start is called before the first frame update
     void Start()
@@ -99,7 +100,7 @@ public class Player : MonoBehaviour
     {
         if (active)
         {
-            playerNameText.color = activeColor;
+            playerNameText.color = ONO.ActiveColor;
             if (!isActivePlayer)
             {
                 cardsOfPlayer.Sort();
@@ -119,7 +120,7 @@ public class Player : MonoBehaviour
         }
         else
         {
-            playerNameText.color = inactiveColor;
+            playerNameText.color = ONO.InactiveColor;
             game.HideCards();
             newCardsCount = cardsOfPlayer.Count;
             isActivePlayer = false;
@@ -213,6 +214,12 @@ public class Player : MonoBehaviour
         backSides.Add(clone);
     }
 
+    public void Wins()
+    {
+        _wonGames++;
+        _isWinner = true;
+    }
+
     public void Reset()
     {
         for (int i = 0; i < cardsOfPlayer.Count; i++)
@@ -220,10 +227,11 @@ public class Player : MonoBehaviour
             GameObject.Destroy(backSides[0]);
             backSides.RemoveAt(0);
         }
-        playerNameText.color = inactiveColor;
+        playerNameText.color = ONO.InactiveColor;
         drawingAllowed = true;
         isActivePlayer = false;
         cardsOfPlayer.Clear();
+        _isWinner = false;
         RenderMessage();
     }
 

@@ -20,6 +20,9 @@ public class ONO
         set { }
     }
 
+    public static Color InactiveColor = new Color32(255, 157, 0, 255);
+    public static Color ActiveColor = new Color32(255, 255, 0, 255);
+
     public GameObject playerNamesGO;
     public PlayerNames playerNames;
 

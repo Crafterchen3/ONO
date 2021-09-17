@@ -85,7 +85,7 @@ public class Score : MonoBehaviour
             case 3:
                 Player3PointsGO = gameObject;
                 Player3Points = Player3PointsGO.GetComponent<TMP_Text>();
-                 break;
+                break;
             case 4:
                 Player4PointsGO = gameObject;
                 Player4Points = Player4PointsGO.GetComponent<TMP_Text>();
@@ -93,11 +93,11 @@ public class Score : MonoBehaviour
             case 5:
                 Player5PointsGO = gameObject;
                 Player5Points = Player5PointsGO.GetComponent<TMP_Text>();
-                 break;
+                break;
             case 6:
                 Player6PointsGO = gameObject;
                 Player6Points = Player6PointsGO.GetComponent<TMP_Text>();
-                 break;
+                break;
         }
         presentPlayerPoints++;
         InstanceCheck();
@@ -127,38 +127,41 @@ public class Score : MonoBehaviour
         Player6PointsGO.SetActive(6 <= game.numberOfPlayers);
     }
 
+
+    private void ShowPlayerInfo(TMP_Text name, TMP_Text points, Player player)
+    {
+        name.text = player.playerName;
+        points.text = player.ToString();
+        if (player.IsWinner)
+        {
+            name.color = ONO.ActiveColor;
+            points.color = ONO.ActiveColor;
+        }
+        else
+        {
+            name.color = ONO.InactiveColor;
+            points.color = ONO.InactiveColor;
+        }
+    }
     public void Show()
     {
         HideUnhide();
 
-        Player1.text = game.players[0].playerName;
-        Player1Points.text = game.players[0].wonGames.ToString();
-        Player2.text = game.players[1].playerName;
-        Player2Points.text = game.players[1].wonGames.ToString();
+        ShowPlayerInfo(Player1, Player1Points, game.players[0]);
+        ShowPlayerInfo(Player2, Player2Points, game.players[1]);
 
         if (3 <= game.numberOfPlayers)
-        {
-            Player3.text = game.players[2].playerName;
-            Player3Points.text = game.players[2].wonGames.ToString();
-        }
+            ShowPlayerInfo(Player3, Player3Points, game.players[2]);
 
         if (4 <= game.numberOfPlayers)
-        {
-            Player4.text = game.players[3].playerName;
-            Player4Points.text = game.players[3].wonGames.ToString();
-        }
+            ShowPlayerInfo(Player4, Player4Points, game.players[3]);
 
         if (5 <= game.numberOfPlayers)
-        {
-            Player5.text = game.players[4].playerName;
-            Player5Points.text = game.players[4].wonGames.ToString();
-        }
+            ShowPlayerInfo(Player5, Player5Points, game.players[4]);
 
         if (6 <= game.numberOfPlayers)
-        {
-            Player6.text = game.players[5].playerName;
-            Player6Points.text = game.players[5].wonGames.ToString();
-        }
+            ShowPlayerInfo(Player6, Player6Points, game.players[5]);
+
         gameObject.SetActive(true);
     }
 

@@ -363,7 +363,7 @@ public class Game : MonoBehaviour
 
     private void CurrentPlayerWins()
     {
-        currentPlayer.wonGames++;
+        currentPlayer.Wins();
         highScoreHistory.PlayerHasWon(currentPlayer.playerName);
         persistence.SaveHighScores();
 
