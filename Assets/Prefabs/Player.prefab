@@ -253,12 +253,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f06fed7175d83d74ebbefb150b6b228a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  onoPressed: 0
   isActivePlayer: 0
   cardBacksidePrefab: {fileID: 8798062002374086128, guid: 117396a5c4e915a4f9b549abb13c3d96, type: 3}
   playerName: 
   endMoveDelay: 2
-  numberOfCardsToDraw: 1
 --- !u!1 &5241562013368281368
 GameObject:
   m_ObjectHideFlags: 0

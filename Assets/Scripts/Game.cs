@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class Game : MonoBehaviour
 {
-    const int maxPlayers = 6;
-
     public CardDescriptor cardOnTop;
     public Sprite wish1;
     public Sprite wish2;
@@ -15,6 +13,7 @@ public class Game : MonoBehaviour
     public GameObject playerPrefab;
     public float cardCreationRate = 0.5f;
     public int numberOfPlayers = 3;
+    public LayoutManager.ILayout layout;
 
     private Sprite[] allCardFaces;
     private SpriteRenderer spriteRenderer;
@@ -26,8 +25,6 @@ public class Game : MonoBehaviour
     private List<CardDescriptor> unplayedCards = new List<CardDescriptor>();
     private List<CardDescriptor> newCardsQueue = new List<CardDescriptor>();
     private List<GameObject> renderedCards = new List<GameObject>();
-
-    private Vector3[] playerPositions = new Vector3[maxPlayers];
 
     public List<Player> players = new List<Player>();
     private List<GameObject> playerGameObjects = new List<GameObject>();
@@ -51,7 +48,6 @@ public class Game : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         persistence = new Persistence(this);
         highScoreHistory = persistence.LoadHighScores();
-        CreatePlayerPositions();
         ONO.Current.GameControlPresent(this, gameObject);
     }
 
@@ -109,22 +105,19 @@ public class Game : MonoBehaviour
 
     public void CreatePlayer(int pos, string name)
     {
-        GameObject clone = Instantiate(playerPrefab, playerPositions[pos], Quaternion.identity);
+        GameObject clone = Instantiate(playerPrefab, layout.GetPositions()[pos], layout.GetRotations()[pos]);
         Player result = clone.GetComponent<Player>();
         result.SetName(name);
+        result.cardQuaternion = layout.GetRotations()[pos];
+        result.freezeXPosition = layout.GetFreezePositionX(pos);
         players.Add(result);
         playerGameObjects.Add(clone);
     }
 
 
-    private void CreatePlayerPositions()
+    public void SetLayout(LayoutManager.ILayout layout)
     {
-        playerPositions[2] = new Vector3(-10f, 3f, 0f);
-        playerPositions[0] = new Vector3(-4.5f, 3f, 0f);
-        playerPositions[1] = new Vector3(1f, 3f, 0f);
-        playerPositions[3] = new Vector3(6.5f, 3f, 0f);
-        playerPositions[4] = new Vector3(-10f, -0.5f, 0f);
-        playerPositions[5] = new Vector3(6.5f, -0.5f, 0f);
+        this.layout = layout;
     }
 
     private void CreateCards()
@@ -468,6 +461,11 @@ public class Game : MonoBehaviour
     {
         if (currentPlayer != null)
             currentPlayer.OnoPressed = true;
+    }
+
+    public void SkipMovePressed()
+    {
+        NextPlayer();
     }
 
     public void NextPlayerIsReady()

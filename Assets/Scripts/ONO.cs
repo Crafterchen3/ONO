@@ -1,7 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using UnityEditor;
 using UnityEngine;
+using static UnityEngine.GUI;
 
 public class ONO
 {
@@ -49,6 +52,10 @@ public class ONO
     public GameObject PlayerChooserGO;
 
     public Highscores highscores;
+
+    public SkipMove skipMove;
+
+    private SizingProblem sizingProblem;
 
     private int instanceCount = 0;
 
@@ -108,7 +115,7 @@ public class ONO
     // Instance 8
     public void LauncherPresent(Launcher launcher)
     {
-        this.launcher = launcher; 
+        this.launcher = launcher;
         InstanceCheck();
     }
 
@@ -140,10 +147,41 @@ public class ONO
         InstanceCheck();
     }
 
+
+    // Instance 13
+    public void SkipMovePresent(SkipMove skipMove)
+    {
+        this.skipMove = skipMove;
+        InstanceCheck();
+    }
+
+    // Instance 14
+    private LayoutManager.ILayout layout;
+    public void SetLayout(LayoutManager.ILayout layout)
+    {
+        this.layout = layout;
+        InstanceCheck();
+    }
+
+    // Instance 15
+    internal void SizingProblemPopupPresent(SizingProblem sizingProblem)
+    {
+        this.sizingProblem = sizingProblem;
+        InstanceCheck();
+    }
+
     private void InstanceCheck()
     {
         instanceCount++;
-        if (instanceCount >= 12)
-            launcher.Show();
+        if (instanceCount >= 15)
+        {
+            if (layout != null)
+            {
+                game.SetLayout(layout);
+                launcher.Show();
+            }
+            else
+                sizingProblem.Show();
+        }
     }
 }

@@ -81,7 +81,7 @@ public class PlayerNames : MonoBehaviour
 
     public void MorePlayers()
     {
-        if (NoOfPlayers < 6)
+        if (NoOfPlayers < ONO.Current.game.layout.GetMaxPlayers())
         {
             NoOfPlayers++;
             NoOfPayersText.text = NoOfPlayers.ToString();

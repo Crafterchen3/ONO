@@ -131,7 +131,7 @@ public class Score : MonoBehaviour
     private void ShowPlayerInfo(TMP_Text name, TMP_Text points, Player player)
     {
         name.text = player.playerName;
-        points.text = player.ToString();
+        points.text = player.WonGames.ToString();
         if (player.IsWinner)
         {
             name.color = ONO.ActiveColor;

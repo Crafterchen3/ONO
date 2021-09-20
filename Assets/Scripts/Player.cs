@@ -17,6 +17,8 @@ public class Player : MonoBehaviour
     public List<CardDescriptor> cardsOfPlayer = new List<CardDescriptor>();
     public string playerName;
     public float endMoveDelay = 0.5f;
+    public Quaternion cardQuaternion;
+    public bool freezeXPosition;
 
     private int _noOfCardsToDraw = 1;
     public int NoOfCardsToDraw { get { return _noOfCardsToDraw; } set { SetNoOfCardsToDraw(value); } }
@@ -123,6 +125,7 @@ public class Player : MonoBehaviour
             playerNameText.color = ONO.InactiveColor;
             game.HideCards();
             newCardsCount = cardsOfPlayer.Count;
+            ONO.Current.skipMove.Hide();
             isActivePlayer = false;
             RenderMessage();
         }
@@ -198,6 +201,8 @@ public class Player : MonoBehaviour
             _noOfCardsToDraw = 1;
             if (!ComputeCardValidity())
                 ScheduleDelayedEndMove();
+            else
+                ONO.Current.skipMove.Show();
             RenderMessage();
         }
     }
@@ -205,11 +210,17 @@ public class Player : MonoBehaviour
 
     private void RenderNewCard()
     {
-        GameObject clone = Instantiate(cardBacksidePrefab, new Vector3(gameObject.transform.position.x + 0.1f, gameObject.transform.position.y + 0.04f, 0f), Quaternion.identity);
+        GameObject clone = Instantiate(cardBacksidePrefab, new Vector3(gameObject.transform.position.x + 0.1f, gameObject.transform.position.y + 0.04f, 0f), cardQuaternion);
 
         SpriteRenderer sr = clone.GetComponent<SpriteRenderer>();
         sr.sortingOrder = sortingOrder;
         sortingOrder--;
+
+        if (freezeXPosition)
+        {
+            Rigidbody2D rb = clone.GetComponent<Rigidbody2D>();
+            rb.constraints = RigidbodyConstraints2D.FreezePositionX;
+        }
 
         backSides.Add(clone);
     }
