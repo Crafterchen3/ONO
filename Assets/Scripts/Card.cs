@@ -22,10 +22,36 @@ public class Card : MonoBehaviour
         Render();
     }
 
+    private bool sendToCardStack = false;
+    float finalRotation;
+
+    public void MoveToCardStack()
+    {
+        sendToCardStack = true;
+        finalRotation = Random.Range(0, 359);
+        foreach (BoxCollider2D bc in gameObject.GetComponents<BoxCollider2D>())
+        {
+            bc.enabled = false;
+        }
+        gameObject.GetComponent<SpriteRenderer>().sortingOrder = ONO.Current.game.playedCards.Count + 1;
+    }
+
     // Update is called once per frame
     void Update()
     {
-
+        if (sendToCardStack)
+            if (Vector3.Distance(transform.position, Vector3.zero) < 0.0001f)
+            {
+                gameObject.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+                sendToCardStack = false;
+            }
+            else
+            {
+                float step = 20f * Time.deltaTime;
+                float rotationStep = 360f * Time.deltaTime;
+                transform.position = Vector3.MoveTowards(transform.position, Vector3.zero, step);
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.Euler(0, 0, finalRotation), rotationStep);
+            }
     }
 
     public void SetDescriptor(CardDescriptor cardDescriptor)

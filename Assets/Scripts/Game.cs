@@ -21,10 +21,11 @@ public class Game : MonoBehaviour
     private int sortingOrder = 10000;
 
     private List<CardDescriptor> allCards = new List<CardDescriptor>();
-    private List<CardDescriptor> playedCards = new List<CardDescriptor>();
+    public List<CardDescriptor> playedCards = new List<CardDescriptor>();
     private List<CardDescriptor> unplayedCards = new List<CardDescriptor>();
     private List<CardDescriptor> newCardsQueue = new List<CardDescriptor>();
     private List<GameObject> renderedCards = new List<GameObject>();
+    private List<GameObject> renderedPlayedCards = new List<GameObject>();
 
     public List<Player> players = new List<Player>();
     private List<GameObject> playerGameObjects = new List<GameObject>();
@@ -183,6 +184,11 @@ public class Game : MonoBehaviour
             unplayedCards.Add(playedCards[playedCards.Count - 1]);
             playedCards.RemoveAt(playedCards.Count - 1);
         }
+        for (int i = 0; i < renderedPlayedCards.Count - 1; i++)
+            Destroy(renderedPlayedCards[i]);
+        GameObject topGO = renderedPlayedCards[renderedPlayedCards.Count - 1];
+        renderedPlayedCards.Clear();
+        renderedPlayedCards.Add(topGO);
         playedCards.Add(cardOnTop);
     }
 
@@ -222,8 +228,7 @@ public class Game : MonoBehaviour
         {
             currentPlayer.cardsOfPlayer.Remove(cardDescriptor);
             playedCards.Add(cardDescriptor);
-            RemoveCard(cardDescriptor);
-            spriteRenderer.sprite = cardFace;
+            MoveCard(cardDescriptor);
             cardOnTop = cardDescriptor;
             if (currentPlayer.cardsOfPlayer.Count > 0)
             {
@@ -265,20 +270,19 @@ public class Game : MonoBehaviour
         return false;
     }
 
-
-    private void RemoveCard(CardDescriptor cardDescriptor)
+    private void MoveCard(CardDescriptor cardDescriptor)
     {
         foreach (GameObject c in renderedCards)
         {
             Card card = c.GetComponent<Card>();
             if (card.CardDescriptor == cardDescriptor)
             {
-                Destroy(c);
+                card.MoveToCardStack();
                 renderedCards.Remove(c);
+                renderedPlayedCards.Add(c);
                 break;
             }
         }
-
     }
 
     public void VisualizeValidity(CardDescriptor descriptor)

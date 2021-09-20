@@ -100,6 +100,8 @@ public class Player : MonoBehaviour
 
     public void SetPlayerActive(bool active)
     {
+        ONO.Current.skipMove.Hide();
+
         if (active)
         {
             playerNameText.color = ONO.ActiveColor;
@@ -125,7 +127,6 @@ public class Player : MonoBehaviour
             playerNameText.color = ONO.InactiveColor;
             game.HideCards();
             newCardsCount = cardsOfPlayer.Count;
-            ONO.Current.skipMove.Hide();
             isActivePlayer = false;
             RenderMessage();
         }
