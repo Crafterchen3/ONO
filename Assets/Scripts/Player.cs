@@ -104,21 +104,26 @@ public class Player : MonoBehaviour
 
         if (active)
         {
+            newCardsCount = 0;
             playerNameText.color = ONO.ActiveColor;
             if (!isActivePlayer)
             {
                 cardsOfPlayer.Sort();
-                for (int i = 0; i < cardsOfPlayer.Count; i++)
+                for (int i = 0; i < backSides.Count; i++)
                 {
                     GameObject.Destroy(backSides[0]);
                     backSides.RemoveAt(0);
-                    game.ShowCard(cardsOfPlayer[i]);
                 }
+                for (int i = 0; i < cardsOfPlayer.Count; i++)
+                {
+                    cardsOfPlayer[i].visible = false;
+                    game.ShowCard(cardsOfPlayer[i]);
+                }   
             }
             isActivePlayer = true;
             drawingAllowed = true;
-            game.ShowArrow(!ComputeCardValidity());
-            if ((cardsOfPlayer.Count == 1) && !OnoPressed)
+            ComputeCardValidity();
+           if ((cardsOfPlayer.Count == 1) && !OnoPressed)
                 Draw(2);
             RenderMessage();
         }
@@ -130,7 +135,6 @@ public class Player : MonoBehaviour
             isActivePlayer = false;
             RenderMessage();
         }
-
     }
 
     private bool ComputeCardValidity()
@@ -189,6 +193,7 @@ public class Player : MonoBehaviour
         {
             CardDescriptor card = game.Draw();
             cardsOfPlayer.Add(card);
+            card.visible = true;
             if (isActivePlayer)
                 game.ShowCard(card);
             else

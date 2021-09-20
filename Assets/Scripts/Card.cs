@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Card : MonoBehaviour
 {
-    public CardDescriptor CardDescriptor;
+    public CardDescriptor descriptor;
 
     private Game game;
     private SpriteRenderer spriteRenderer;
@@ -18,8 +18,8 @@ public class Card : MonoBehaviour
         GameObject controllerObject = GameObject.FindGameObjectWithTag("game");
         game = controllerObject.GetComponent<Game>();
         spriteRenderer = GetComponent<SpriteRenderer>();
-
-        Render();
+        if ((descriptor != null) && (descriptor.visible))
+            Render();
     }
 
     private bool sendToCardStack = false;
@@ -56,26 +56,28 @@ public class Card : MonoBehaviour
 
     public void SetDescriptor(CardDescriptor cardDescriptor)
     {
-        this.CardDescriptor = cardDescriptor;
-        Render();
+        this.descriptor = cardDescriptor;
+        if (cardDescriptor.visible)
+            Render();
     }
 
-    private void Render()
+    public void Render()
     {
-        if ((CardDescriptor != null) && (game != null))
+        if ((descriptor != null) && (game != null))
         {
-            spriteRenderer.sprite = game.GetCardFace(CardDescriptor);
+            spriteRenderer.sprite = game.GetCardFace(descriptor);
+            descriptor.visible = true;
             VisualizeValidity();
         }
     }
 
     public void VisualizeValidity()
     {
-        spriteRenderer.color = (CardDescriptor.valid) ? validColor : invalidColor;
+        spriteRenderer.color = (descriptor.valid) ? validColor : invalidColor;
     }
 
     void OnMouseDown()
     {
-        game.TryPlayCard(CardDescriptor, spriteRenderer.sprite);
+        game.TryPlayCard(descriptor, spriteRenderer.sprite);
     }
 }

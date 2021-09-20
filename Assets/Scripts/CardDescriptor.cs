@@ -9,6 +9,7 @@ public class CardDescriptor : IComparable<CardDescriptor>
     public bool Special;
     public int Number;
     public bool valid;
+    public bool visible = false;
 
     // Colors:
     public const int BLACK  = 0;

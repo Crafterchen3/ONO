@@ -37,6 +37,8 @@ public class Game : MonoBehaviour
 
     private int skippedPlayer = -1;
 
+    private bool playerIsReady = false;
+
     public HighScoreHistory highScoreHistory;
     public Persistence persistence;
 
@@ -275,7 +277,7 @@ public class Game : MonoBehaviour
         foreach (GameObject c in renderedCards)
         {
             Card card = c.GetComponent<Card>();
-            if (card.CardDescriptor == cardDescriptor)
+            if (card.descriptor == cardDescriptor)
             {
                 card.MoveToCardStack();
                 renderedCards.Remove(c);
@@ -290,7 +292,7 @@ public class Game : MonoBehaviour
         foreach (GameObject c in renderedCards)
         {
             Card card = c.GetComponent<Card>();
-            if (card.CardDescriptor == descriptor)
+            if (card.descriptor == descriptor)
             {
                 card.VisualizeValidity();
                 break;
@@ -347,6 +349,8 @@ public class Game : MonoBehaviour
                 currentPlayer.SetPlayerActive(false);
             currentPlayerIndex = nextIndex;
             currentPlayer = players[currentPlayerIndex];
+            currentPlayer.SetPlayerActive(true);
+            playerIsReady = false;
             ONO.Current.nextPlayerButton.Show(currentPlayer.playerName);
         }
         else
@@ -385,6 +389,8 @@ public class Game : MonoBehaviour
     {
         GameObject clone = Instantiate(cardPrefab, new Vector3(-8.166648f, -3.3f, 0f), Quaternion.identity);
         Card card = clone.GetComponent<Card>();
+        if (playerIsReady)
+            cardDescriptor.visible = true;
         card.SetDescriptor(cardDescriptor);
 
         if (renderedCards.Count == 0)
@@ -480,7 +486,17 @@ public class Game : MonoBehaviour
             skippedPlayer = -1;
         }
         ONO.Current.nextPlayerPopup.SetActive(false);
-        currentPlayer.SetPlayerActive(true);
+        playerIsReady = true;
+        foreach (GameObject card in renderedCards)
+            card.GetComponent<Card>().Render();
+        bool showArrowFlag = true;
+        foreach(CardDescriptor c in currentPlayer.cardsOfPlayer)
+            if (c.valid)
+            {
+                showArrowFlag = false;
+                break;
+            }
+        ShowArrow(showArrowFlag);
     }
 
     public void DisplayScore()
@@ -502,6 +518,9 @@ public class Game : MonoBehaviour
         allCards.AddRange(unplayedCards);
         playedCards.Clear();
         unplayedCards.Clear();
+        foreach (GameObject go in renderedPlayedCards)
+            Destroy(go);
+        renderedPlayedCards.Clear();
         DistributeCards();
         ChooseTopCard();
         spriteRenderer.sprite = GetCardFace(cardOnTop);
