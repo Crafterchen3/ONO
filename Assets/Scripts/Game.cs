@@ -16,7 +16,6 @@ public class Game : MonoBehaviour
     public LayoutManager.ILayout layout;
 
     private Sprite[] allCardFaces;
-    private SpriteRenderer spriteRenderer;
 
     private int sortingOrder = 10000;
 
@@ -48,7 +47,6 @@ public class Game : MonoBehaviour
     {
         gameObject.SetActive(false);
         allCardFaces = Resources.LoadAll<Sprite>("Textures/Cards/Cards");
-        spriteRenderer = GetComponent<SpriteRenderer>();
         persistence = new Persistence(this);
         highScoreHistory = persistence.LoadHighScores();
         ONO.Current.GameControlPresent(this, gameObject);
@@ -74,9 +72,20 @@ public class Game : MonoBehaviour
         ONO.Current.arrow.SetActive(false);
     }
 
-    public void ShowArrow(bool visible = true)
+    public void ShowArrow()
     {
-        ONO.Current.arrow.SetActive(visible);
+        if (currentPlayer != null)
+        {
+            bool showArrowFlag = true;
+            foreach (CardDescriptor c in currentPlayer.cardsOfPlayer)
+                if (c.valid)
+                {
+                    showArrowFlag = false;
+                    break;
+                }
+
+            ONO.Current.arrow.SetActive(showArrowFlag);
+        }
     }
 
     public void PrepareNewGame(int noOfPlayers)
@@ -102,17 +111,17 @@ public class Game : MonoBehaviour
         CreateCards();
         DistributeCards();
         ChooseTopCard();
-        spriteRenderer.sprite = GetCardFace(cardOnTop);
+        gameObject.GetComponent<SpriteRenderer>().sprite = GetCardFace(cardOnTop);
         NextPlayer();
     }
 
     public void CreatePlayer(int pos, string name)
     {
-        GameObject clone = Instantiate(playerPrefab, layout.GetPositions()[pos], layout.GetRotations()[pos]);
+        GameObject clone = Instantiate(playerPrefab, layout.GetPositions(numberOfPlayers)[pos], layout.GetRotations(numberOfPlayers)[pos]);
         Player result = clone.GetComponent<Player>();
         result.SetName(name);
-        result.cardQuaternion = layout.GetRotations()[pos];
-        result.freezeXPosition = layout.GetFreezePositionX(pos);
+        result.cardQuaternion = layout.GetRotations(numberOfPlayers)[pos];
+        result.freezeXPosition = layout.GetFreezePositionX(numberOfPlayers, pos);
         players.Add(result);
         playerGameObjects.Add(clone);
     }
@@ -219,6 +228,7 @@ public class Game : MonoBehaviour
         if (unplayedCards.Count > 0)
         {
             result = unplayedCards[unplayedCards.Count - 1];
+            result.visible = playerIsReady;
             unplayedCards.RemoveAt(unplayedCards.Count - 1);
         }
         return result;
@@ -226,7 +236,7 @@ public class Game : MonoBehaviour
 
     public bool TryPlayCard(CardDescriptor cardDescriptor, Sprite cardFace)
     {
-        if (cardDescriptor.valid)
+        if (cardDescriptor.visible && cardDescriptor.valid)
         {
             currentPlayer.cardsOfPlayer.Remove(cardDescriptor);
             playedCards.Add(cardDescriptor);
@@ -302,7 +312,7 @@ public class Game : MonoBehaviour
 
     public void DrawCard()
     {
-        if ((currentPlayer != null) && currentPlayer.isActivePlayer)
+        if ((currentPlayer != null) && currentPlayer.isActivePlayer && playerIsReady)
         {
             currentPlayer.Draw(currentPlayer.NoOfCardsToDraw);
             currentPlayer.NoOfCardsToDraw = 1;
@@ -349,8 +359,8 @@ public class Game : MonoBehaviour
                 currentPlayer.SetPlayerActive(false);
             currentPlayerIndex = nextIndex;
             currentPlayer = players[currentPlayerIndex];
-            currentPlayer.SetPlayerActive(true);
             playerIsReady = false;
+            currentPlayer.SetPlayerActive(true);
             ONO.Current.nextPlayerButton.Show(currentPlayer.playerName);
         }
         else
@@ -359,6 +369,7 @@ public class Game : MonoBehaviour
             if (renderedCards.Count > 0)
                 foreach (BoxCollider2D c in renderedCards[0].GetComponents<BoxCollider2D>())
                     c.enabled = true; // react on click on the right side of the most-left card
+            ShowArrow();
         }
     }
 
@@ -448,6 +459,7 @@ public class Game : MonoBehaviour
     public void Wish(int color)
     {
         cardOnTop.Color = color;
+        SpriteRenderer spriteRenderer = renderedPlayedCards[renderedPlayedCards.Count - 1].GetComponent<SpriteRenderer>();
         ONO.Current.wishPopup.SetActive(false);
         switch (color)
         {
@@ -489,14 +501,7 @@ public class Game : MonoBehaviour
         playerIsReady = true;
         foreach (GameObject card in renderedCards)
             card.GetComponent<Card>().Render();
-        bool showArrowFlag = true;
-        foreach(CardDescriptor c in currentPlayer.cardsOfPlayer)
-            if (c.valid)
-            {
-                showArrowFlag = false;
-                break;
-            }
-        ShowArrow(showArrowFlag);
+        ShowArrow();
     }
 
     public void DisplayScore()
@@ -523,7 +528,6 @@ public class Game : MonoBehaviour
         renderedPlayedCards.Clear();
         DistributeCards();
         ChooseTopCard();
-        spriteRenderer.sprite = GetCardFace(cardOnTop);
         NextPlayer();
     }
 

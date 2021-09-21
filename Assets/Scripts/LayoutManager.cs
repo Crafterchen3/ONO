@@ -21,12 +21,11 @@ public class LayoutManager : MonoBehaviour
     public interface ILayout
     {
         int GetMaxPlayers();
-        Vector3[] GetPositions();
-        Quaternion[] GetRotations();
+        Vector3[] GetPositions(int noOfPlayers);
+        Quaternion[] GetRotations(int noOfPlayers);
         float GetMinHeight();
         float GetMinWidth();
-        bool GetFreezePositionX(int index);
-        bool GetFreezePositionY(int index);
+        bool GetFreezePositionX(int noOfPlayers, int index);
     }
 
     private class Layout1 : ILayout
@@ -43,14 +42,12 @@ public class LayoutManager : MonoBehaviour
             this.displayHeight = displayHeight;
         }
 
-        public bool GetFreezePositionX(int index)
+        public bool GetFreezePositionX(int noOfPlayers, int index)
         {
-            return index >= 2;
-        }
-
-        public bool GetFreezePositionY(int index)
-        {
-            return !GetFreezePositionX(index);
+            if (noOfPlayers < 3)
+                return false;
+            else
+                return ((index == 0) || (index == 3));
         }
 
         public int GetMaxPlayers()
@@ -68,7 +65,7 @@ public class LayoutManager : MonoBehaviour
             return 3 * padding + 2 * playerHeight + 2 * playerWidth;
         }
 
-        public Vector3[] GetPositions()
+        public Vector3[] GetPositions(int noOfPlayers)
         {
             float xSpace = displayWidth - (2 * playerHeight + 2 * playerWidth);
             float xGap = xSpace / 5;
@@ -81,23 +78,39 @@ public class LayoutManager : MonoBehaviour
             float x1 = -1f * xGap / 2f - playerWidth / 2f;
             float y12 = displayHeight / 2f - yGap - playerHeight / 2f;
 
-            playerPositions[2] = new Vector3(x0, 0f, 0f);
-            playerPositions[0] = new Vector3(x1 - playerCorrection, y12, 0f);
-            playerPositions[1] = new Vector3(-1f * x1 - playerCorrection, y12, 0f);
-            playerPositions[3] = new Vector3(x3, 3.8f, 0f);
+            if (noOfPlayers < 3)
+            {
+                playerPositions[0] = new Vector3(x1 - playerCorrection, y12, 0f);
+                playerPositions[1] = new Vector3(-1f * x1 - playerCorrection, y12, 0f);
+            }
+            else
+            {
+                playerPositions[0] = new Vector3(x0, 0f, 0f);
+                playerPositions[1] = new Vector3(x1 - playerCorrection, y12, 0f);
+                playerPositions[2] = new Vector3(-1f * x1 - playerCorrection, y12, 0f);
+                playerPositions[3] = new Vector3(x3, 3.8f, 0f);
+            }
 
             return playerPositions;
         }
 
-        public Quaternion[] GetRotations()
+        public Quaternion[] GetRotations(int noOfPlayers)
         {
-            rotations[2] = Quaternion.Euler(new Vector3(0, 0, 90));
-            rotations[0] = Quaternion.identity;
-            rotations[1] = Quaternion.identity;
-            rotations[3] = Quaternion.Euler(new Vector3(0, 0, 270));
+            if (noOfPlayers < 3)
+            {
+                rotations[0] = Quaternion.identity;
+                rotations[1] = Quaternion.identity;
+            }
+            else
+            {
+                rotations[0] = Quaternion.Euler(new Vector3(0, 0, 90));
+                rotations[1] = Quaternion.identity;
+                rotations[2] = Quaternion.identity;
+                rotations[3] = Quaternion.Euler(new Vector3(0, 0, 270));
+            }
+
             return rotations;
         }
-
     }
 
     private class Layout2 : ILayout
@@ -114,14 +127,9 @@ public class LayoutManager : MonoBehaviour
             this.displayHeight = displayHeight;
         }
 
-        public bool GetFreezePositionX(int index)
+        public bool GetFreezePositionX(int noOfPlayers, int index)
         {
             return false;
-        }
-
-        public bool GetFreezePositionY(int index)
-        {
-            return true;
         }
 
         public int GetMaxPlayers()
@@ -139,7 +147,7 @@ public class LayoutManager : MonoBehaviour
             return padding + 2 * playerWidth;
         }
 
-        public Vector3[] GetPositions()
+        public Vector3[] GetPositions(int noOfPlayers)
         {
             float xSpace = displayWidth - 2 * playerWidth;
             float xGap = xSpace / 3;
@@ -155,13 +163,12 @@ public class LayoutManager : MonoBehaviour
             return playerPositions;
         }
 
-        public Quaternion[] GetRotations()
+        public Quaternion[] GetRotations(int noOfPlayers)
         {
             rotations[0] = Quaternion.identity;
             rotations[1] = Quaternion.identity;
             return rotations;
         }
-
     }
 
     private class Layout3 : ILayout
@@ -178,14 +185,9 @@ public class LayoutManager : MonoBehaviour
             this.displayHeight = displayHeight;
         }
 
-        public bool GetFreezePositionX(int index)
+        public bool GetFreezePositionX(int noOfPlayers, int index)
         {
             return false;
-        }
-
-        public bool GetFreezePositionY(int index)
-        {
-            return true;
         }
 
         public int GetMaxPlayers()
@@ -203,7 +205,7 @@ public class LayoutManager : MonoBehaviour
             return 3 * padding + 4 * playerWidth;
         }
 
-        public Vector3[] GetPositions()
+        public Vector3[] GetPositions(int noOfPlayers)
         {
             float xSpace = displayWidth - 4 * playerWidth;
             float xGap = xSpace / 5;
@@ -217,17 +219,33 @@ public class LayoutManager : MonoBehaviour
             float y0123 = displayHeight / 2f - padding - 0.5f * playerHeight;
             float y45 = displayHeight / 2f - 2 * padding - 1.5f * playerHeight;
 
-            playerPositions[4] = new Vector3(x0, y0123, 0f);
-            playerPositions[0] = new Vector3(x1, y0123, 0f);
-            playerPositions[1] = new Vector3(x2, y0123, 0f);
-            playerPositions[5] = new Vector3(x3, y0123, 0f);
-            playerPositions[2] = new Vector3(x0, y45, 0f);
-            playerPositions[3] = new Vector3(x3, y45, 0f);
+            if (noOfPlayers == 2)
+            {
+                playerPositions[0] = new Vector3(x1, y0123, 0f);
+                playerPositions[1] = new Vector3(x2, y0123, 0f);
+            }
+            else if (noOfPlayers <= 4)
+            {
+                playerPositions[0] = new Vector3(x0, y0123, 0f);
+                playerPositions[1] = new Vector3(x1, y0123, 0f);
+                playerPositions[2] = new Vector3(x2, y0123, 0f);
+                playerPositions[3] = new Vector3(x3, y0123, 0f);
+
+            }
+            else
+            {
+                playerPositions[0] = new Vector3(x0, y45, 0f);
+                playerPositions[1] = new Vector3(x0, y0123, 0f);
+                playerPositions[2] = new Vector3(x1, y0123, 0f);
+                playerPositions[3] = new Vector3(x2, y0123, 0f);
+                playerPositions[4] = new Vector3(x3, y0123, 0f);
+                playerPositions[5] = new Vector3(x3, y45, 0f);
+            }
 
             return playerPositions;
         }
 
-        public Quaternion[] GetRotations()
+        public Quaternion[] GetRotations(int noOfPlayers)
         {
             rotations[0] = Quaternion.identity;
             rotations[1] = Quaternion.identity;
@@ -238,7 +256,6 @@ public class LayoutManager : MonoBehaviour
 
             return rotations;
         }
-
     }
 
     private class Layout4 : ILayout
@@ -255,14 +272,9 @@ public class LayoutManager : MonoBehaviour
             this.displayHeight = displayHeight;
         }
 
-        public bool GetFreezePositionX(int index)
+        public bool GetFreezePositionX(int noOfPlayers, int index)
         {
             return false;
-        }
-
-        public bool GetFreezePositionY(int index)
-        {
-            return true;
         }
 
         public int GetMaxPlayers()
@@ -280,7 +292,7 @@ public class LayoutManager : MonoBehaviour
             return playingAreaWidth;
         }
 
-        public Vector3[] GetPositions()
+        public Vector3[] GetPositions(int noOfPlayers)
         {
             float ySpace = displayHeight / 2 - playingAreaUpperLeftY - 2 * playerHeight;
             float yGap = ySpace / 3;
@@ -297,7 +309,8 @@ public class LayoutManager : MonoBehaviour
             return playerPositions;
         }
 
-        public Quaternion[] GetRotations()
+
+        public Quaternion[] GetRotations(int noOfPlayers)
         {
             rotations[0] = Quaternion.identity;
             rotations[1] = Quaternion.identity;

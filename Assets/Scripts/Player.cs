@@ -109,7 +109,7 @@ public class Player : MonoBehaviour
             if (!isActivePlayer)
             {
                 cardsOfPlayer.Sort();
-                for (int i = 0; i < backSides.Count; i++)
+                while(backSides.Count > 0)
                 {
                     GameObject.Destroy(backSides[0]);
                     backSides.RemoveAt(0);
@@ -118,12 +118,12 @@ public class Player : MonoBehaviour
                 {
                     cardsOfPlayer[i].visible = false;
                     game.ShowCard(cardsOfPlayer[i]);
-                }   
+                }
             }
             isActivePlayer = true;
             drawingAllowed = true;
             ComputeCardValidity();
-           if ((cardsOfPlayer.Count == 1) && !OnoPressed)
+            if ((cardsOfPlayer.Count == 1) && !OnoPressed)
                 Draw(2);
             RenderMessage();
         }
@@ -193,7 +193,6 @@ public class Player : MonoBehaviour
         {
             CardDescriptor card = game.Draw();
             cardsOfPlayer.Add(card);
-            card.visible = true;
             if (isActivePlayer)
                 game.ShowCard(card);
             else

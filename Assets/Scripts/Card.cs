@@ -34,6 +34,7 @@ public class Card : MonoBehaviour
             bc.enabled = false;
         }
         gameObject.GetComponent<SpriteRenderer>().sortingOrder = ONO.Current.game.playedCards.Count + 1;
+        //gameObject.GetComponent<Rigidbody2D>().Sleep();
     }
 
     // Update is called once per frame
