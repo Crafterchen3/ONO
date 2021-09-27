@@ -97,6 +97,11 @@ public class Game : MonoBehaviour
         playerGameObjects.Clear();
         playedCards.Clear();
         unplayedCards.Clear();
+        seatedPlayers = 0;
+        foreach (GameObject go in renderedPlayedCards)
+            Destroy(go);
+        renderedPlayedCards.Clear();
+        directionIsClockwise = true;
     }
 
     public void PlayerPresent()
@@ -111,7 +116,6 @@ public class Game : MonoBehaviour
         CreateCards();
         DistributeCards();
         ChooseTopCard();
-        gameObject.GetComponent<SpriteRenderer>().sprite = GetCardFace(cardOnTop);
         NextPlayer();
     }
 
@@ -217,6 +221,7 @@ public class Game : MonoBehaviour
                     cardOnTop = top;
             }
         } while (cardOnTop == null);
+        gameObject.GetComponent<SpriteRenderer>().sprite = GetCardFace(cardOnTop);
     }
 
     public CardDescriptor Draw()
@@ -506,7 +511,6 @@ public class Game : MonoBehaviour
 
     public void DisplayScore()
     {
-        ONO.Current.playerWinsPopup.SetActive(false);
         ONO.Current.scoreDialog.Show();
     }
 
@@ -526,6 +530,7 @@ public class Game : MonoBehaviour
         foreach (GameObject go in renderedPlayedCards)
             Destroy(go);
         renderedPlayedCards.Clear();
+        directionIsClockwise = true;
         DistributeCards();
         ChooseTopCard();
         NextPlayer();

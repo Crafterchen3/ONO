@@ -6,18 +6,8 @@ using TMPro;
 public class PopulateNames : MonoBehaviour
 {
     public GameObject PlayerNamePrefab;
-    private Game game;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        GameObject controllerObject = GameObject.FindGameObjectWithTag("game");
-        game = controllerObject.GetComponent<Game>();
-
-        Populate();
-    }
-
-    void RenderPlayer(string name)
+    private void RenderPlayer(string name)
     {
         GameObject clone = (GameObject)Instantiate(PlayerNamePrefab, transform);
         foreach (TMP_Text t in clone.GetComponentsInChildren<TMP_Text>())
@@ -25,9 +15,9 @@ public class PopulateNames : MonoBehaviour
                 t.text = name;
     }
 
-    void Populate()
+    public void Populate()
     {
-        foreach (string n in game.highScoreHistory.GetAllNames())
+        foreach (string n in ONO.Current.game.highScoreHistory.GetAllNames())
             RenderPlayer(n);
     }
 

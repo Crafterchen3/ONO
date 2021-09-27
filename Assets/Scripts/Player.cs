@@ -31,6 +31,9 @@ public class Player : MonoBehaviour
 
     private TMP_Text playerNameText;
     private TMP_Text messageText;
+    private List<string> messageQueue = new List<string>();
+    private string displayedMessage;
+    private Animator messageAnimator;
 
     private List<GameObject> backSides = new List<GameObject>();
 
@@ -58,6 +61,8 @@ public class Player : MonoBehaviour
                 messageText = t;
         }
 
+        messageAnimator = gameObject.GetComponentInChildren<Animator>();
+
         RenderName();
         game.PlayerPresent();
     }
@@ -76,26 +81,58 @@ public class Player : MonoBehaviour
 
     private void RenderMessage()
     {
-        messageText.text = "";
+        string message = "";
+
         if (cardsOfPlayer.Count == 1)
             if (OnoPressed)
-                messageText.text = "Last card!";
+                message = "Last card!";
             else
-                messageText.text = "ONO penalty!";
+                message = "ONO penalty!";
         else if ((cardsOfPlayer.Count == 2) && OnoPressed)
-            messageText.text = "ONO!";
+            message = "ONO!";
 
         if (_noOfCardsToDraw > 1)
-            if (messageText.text.Length == 0)
-                messageText.text = "+" + _noOfCardsToDraw.ToString();
+            if (message.Length == 0)
+                message = "+" + _noOfCardsToDraw.ToString();
             else
-                messageText.text = messageText.text + ", +" + _noOfCardsToDraw.ToString();
+                message = message + ", +" + _noOfCardsToDraw.ToString();
 
         if (_skipped)
-            if (messageText.text.Length == 0)
-                messageText.text = "Skipped";
+            if (message.Length == 0)
+                message = "Skipped";
             else
-                messageText.text = messageText.text + ", skipped";
+                message = message + ", skipped";
+
+        if ((displayedMessage != null) && displayedMessage.Equals(message))
+            return;
+
+        displayedMessage = message;
+
+        if ((message.Length == 0) && !messageAnimator.GetBool("NewText"))
+            messageText.text = "";
+        else
+        {
+            messageQueue.Add(message);
+            if (!messageAnimator.GetBool("NewText"))
+                messageAnimator.SetBool("NewText", true);
+        }
+    }
+
+    public void StartOfAnimation()
+    {
+        messageText.text = messageQueue[0];
+        messageQueue.RemoveAt(0);
+    }
+
+    public void EndOfAnimation()
+    {
+        while ((messageQueue.Count > 0) && (messageQueue[0].Length == 0))
+        {
+            messageText.text = "";
+            messageQueue.RemoveAt(0);
+        }
+        if (messageQueue.Count == 0)
+            messageAnimator.SetBool("NewText", false);
     }
 
     public void SetPlayerActive(bool active)
@@ -109,7 +146,7 @@ public class Player : MonoBehaviour
             if (!isActivePlayer)
             {
                 cardsOfPlayer.Sort();
-                while(backSides.Count > 0)
+                while (backSides.Count > 0)
                 {
                     GameObject.Destroy(backSides[0]);
                     backSides.RemoveAt(0);
@@ -133,6 +170,8 @@ public class Player : MonoBehaviour
             game.HideCards();
             newCardsCount = cardsOfPlayer.Count;
             isActivePlayer = false;
+            if (OnoPressed && (cardsOfPlayer.Count > 1))
+                OnoPressed = false;
             RenderMessage();
         }
     }

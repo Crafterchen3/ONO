@@ -8,17 +8,28 @@ public class PlayerChooser : MonoBehaviour
     void Start()
     {
         gameObject.SetActive(false);
-        ONO.Current.NameChooserPresent(gameObject);
+        ONO.Current.NameChooserPresent(this);
+    }
+
+    public void Show()
+    {
+        gameObject.GetComponentInChildren<PopulateNames>().Populate();
+        gameObject.SetActive(true);
+    }
+
+    public void Hide()
+    {
+        gameObject.SetActive(false);
     }
 
     public void SetChosenPlayer(string name)
     {
         ONO.Current.playerNames.SetChosenPlayer(name);
-        gameObject.SetActive(false);
+        Hide();
     }
 
     public void Cancel()
     {
-        gameObject.SetActive(false);
+        Hide();
     }
 }

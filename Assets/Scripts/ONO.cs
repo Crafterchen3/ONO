@@ -26,7 +26,6 @@ public class ONO
     public static Color InactiveColor = new Color32(255, 157, 0, 255);
     public static Color ActiveColor = new Color32(255, 255, 0, 255);
 
-    public GameObject playerNamesGO;
     public PlayerNames playerNames;
 
     public GameObject gameGO;
@@ -40,22 +39,21 @@ public class ONO
     public GameObject nextPlayerPopup;
     public NextPlayer nextPlayerButton;
 
-    public GameObject playerWinsPopup;
-    public PlayerWins playerWinsDialog;
-
     public Score scoreDialog;
 
     public GameObject arrow;
 
     public Launcher launcher;
 
-    public GameObject PlayerChooserGO;
+    public PlayerChooser playerChooser;
 
     public Highscores highscores;
 
     public SkipMove skipMove;
 
     private SizingProblem sizingProblem;
+
+    public PlayerWinsPopup playerWinsDialog;
 
     private int instanceCount = 0;
 
@@ -82,10 +80,9 @@ public class ONO
     }
 
     // Instance 4
-    public void PlayerWinsPopupPresent(PlayerWins playerWins, GameObject gameObject)
+    public void PlayerWinsPopupPresent(PlayerWinsPopup playerWinsPopup)
     {
-        playerWinsPopup = gameObject;
-        playerWinsDialog = playerWins;
+        playerWinsDialog = playerWinsPopup;
         InstanceCheck();
     }
 
@@ -97,10 +94,9 @@ public class ONO
     }
 
     // Instance 6
-    public void PlayerNamesPopupPresent(PlayerNames playerNames, GameObject gameObject)
+    public void PlayerNamesPopupPresent(PlayerNames playerNames)
     {
         this.playerNames = playerNames;
-        playerNamesGO = gameObject;
         InstanceCheck();
     }
 
@@ -120,9 +116,9 @@ public class ONO
     }
 
     // Instance 9
-    public void NameChooserPresent(GameObject chooser)
+    public void NameChooserPresent(PlayerChooser playerChooser)
     {
-        PlayerChooserGO = chooser;
+        this.playerChooser = playerChooser;
         InstanceCheck();
     }
 
@@ -157,6 +153,7 @@ public class ONO
 
     // Instance 14
     private LayoutManager.ILayout layout;
+ 
     public void SetLayout(LayoutManager.ILayout layout)
     {
         this.layout = layout;

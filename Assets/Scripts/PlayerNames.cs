@@ -62,9 +62,19 @@ public class PlayerNames : MonoBehaviour
 
         HideUnhide();
 
-        gameObject.SetActive(false);
+        Hide();
 
-        ONO.Current.PlayerNamesPopupPresent(this, gameObject);
+        ONO.Current.PlayerNamesPopupPresent(this);
+    }
+
+    public void Show()
+    {
+        gameObject.SetActive(true);
+    }
+
+    public void Hide()
+    {
+        gameObject.SetActive(false);
     }
 
     private void HideUnhide()
@@ -104,7 +114,7 @@ public class PlayerNames : MonoBehaviour
         public void ChoosePlayer(int playerNo)
     {
         currentPlayerToChoose = playerNo;
-        ONO.Current.PlayerChooserGO.SetActive(true);
+        ONO.Current.playerChooser.Show();
     }
 
     public void SetChosenPlayer(string name)
@@ -154,8 +164,7 @@ public class PlayerNames : MonoBehaviour
 
     public void StartGame()
     {
-        GameObject gameGO = GameObject.Find("Game");
-        Game game = gameGO.GetComponent<Game>();
+        Game game = ONO.Current.game;
         game.PrepareNewGame(NoOfPlayers);
         bool newPlayer = false;
         for (int i = 0; i < NoOfPlayers; i++)
@@ -166,7 +175,8 @@ public class PlayerNames : MonoBehaviour
         if (newPlayer)
             game.persistence.SaveHighScores();
 
-        gameObject.SetActive(false);
+        Hide();
+        game.Show();
     }
 
 }

@@ -20,8 +20,7 @@ public class Launcher : MonoBehaviour
 
     public void NewGame()
     {
-        ONO.Current.game.Show();
-        ONO.Current.playerNamesGO.SetActive(true);
+        ONO.Current.playerNames.Show();
         gameObject.SetActive(false);
     }
 

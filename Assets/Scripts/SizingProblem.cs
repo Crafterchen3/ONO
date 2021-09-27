@@ -20,4 +20,5 @@ public class SizingProblem : MonoBehaviour
     {
         gameObject.SetActive(false);
     }
+
 }

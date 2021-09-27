@@ -12,7 +12,7 @@ public class PlayerName : MonoBehaviour
     void Start()
     {
         playerName = gameObject.GetComponentInChildren<TMP_Text>();
-        chooser = ONO.Current.PlayerChooserGO.GetComponent<PlayerChooser>();
+        chooser = ONO.Current.playerChooser;
     }
 
     public void ButtonPressed()
