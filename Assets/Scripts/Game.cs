@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Game : MonoBehaviour
 {
+    public static bool keepCardGameObjets = false;
+
     public CardDescriptor cardOnTop;
     public Sprite wish1;
     public Sprite wish2;
@@ -11,7 +13,7 @@ public class Game : MonoBehaviour
     public Sprite wish4;
     public GameObject cardPrefab;
     public GameObject playerPrefab;
-    public float cardCreationRate = 0.5f;
+    public float cardCreationRate = 0.1f;
     public int numberOfPlayers = 3;
     public LayoutManager.ILayout layout;
 
@@ -396,14 +398,29 @@ public class Game : MonoBehaviour
         }
     }
 
-    public void ShowCard(CardDescriptor cardDescriptor)
+    bool slideInFlag = false;
+
+    public void ShowCard(CardDescriptor cardDescriptor, bool slideIn = false)
     {
+        slideInFlag = slideIn;
         newCardsQueue.Add(cardDescriptor);
     }
 
     private void RenderNewCard(CardDescriptor cardDescriptor)
     {
-        GameObject clone = Instantiate(cardPrefab, new Vector3(-8.166648f, -3.3f, 0f), Quaternion.identity);
+        float startX;
+
+        if (slideInFlag)
+            startX = -8.166648f;
+        else
+        if (renderedCards.Count > 0)
+        {
+            GameObject lastCard = renderedCards[renderedCards.Count - 1];
+            startX = lastCard.transform.position.x - 1;
+        }
+        else
+            startX = 6;
+        GameObject clone = Instantiate(cardPrefab, new Vector3(startX, -3.3f, 0f), Quaternion.identity);
         Card card = clone.GetComponent<Card>();
         if (playerIsReady)
             cardDescriptor.visible = true;

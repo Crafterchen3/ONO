@@ -15,6 +15,7 @@ public class Player : MonoBehaviour
     public bool isActivePlayer = false;
     public GameObject cardBacksidePrefab;
     public List<CardDescriptor> cardsOfPlayer = new List<CardDescriptor>();
+    public List<GameObject> cardsOfPlayGOs = new List<GameObject>();
     public string playerName;
     public float endMoveDelay = 0.5f;
     public Quaternion cardQuaternion;
@@ -233,7 +234,7 @@ public class Player : MonoBehaviour
             CardDescriptor card = game.Draw();
             cardsOfPlayer.Add(card);
             if (isActivePlayer)
-                game.ShowCard(card);
+                game.ShowCard(card, true);
             else
                 newCardsCount++;
         }
