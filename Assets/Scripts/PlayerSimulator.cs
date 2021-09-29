@@ -69,10 +69,11 @@ public class PlayerSimulator
         else
         {
             int maxCards = 0;
+            wishColor = Random.Range(0, 63) % 4 + 1;
             for (int i = 0; i < 4; i++)
                 if (numberOfCardsPerColor[i] > maxCards)
                 {
-                    wishColor = i;
+                    wishColor = i + 1;
                     maxCards = numberOfCardsPerColor[i];
                 }
             if (wish != null)
@@ -87,6 +88,9 @@ public class PlayerSimulator
     public void SimulateMove()
     {
         CardDescriptor chosenCard = ChooseCard();
+
+        if (ONO.Current.game.cardOnTop.Color == 0)
+            Debug.Log("Black card on top");
 
         if (chosenCard == null)
         {

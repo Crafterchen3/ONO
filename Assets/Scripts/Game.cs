@@ -171,7 +171,11 @@ public class Game : MonoBehaviour
                 toDistribute.Add(c);
             while (toDistribute.Count > 0)
             {
-                int pick = Random.Range(0, toDistribute.Count - 1);
+                int pick;
+                if (toDistribute.Count == 1)
+                    pick = 0;
+                else
+                    pick = Random.Range(0, (toDistribute.Count - 1) * 1024) % (toDistribute.Count - 1);
                 CardDescriptor card = toDistribute[pick];
                 unplayedCards.Add(card);
                 toDistribute.RemoveAt(pick);
@@ -264,7 +268,7 @@ public class Game : MonoBehaviour
                         GetNextPlayer().NoOfCardsToDraw = currentPlayer.NoOfCardsToDraw == 1 ? 4 : currentPlayer.NoOfCardsToDraw + 4;
                     currentPlayer.NoOfCardsToDraw = 1;
                     if (currentPlayer.isVirtualPlayer)
-                        Invoke("SimulatorWish", 0.5f);
+                        Invoke("SimulatorWish", 0.2f);
                     else
                         ONO.Current.wishPopup.SetActive(true);
                 }
@@ -302,11 +306,6 @@ public class Game : MonoBehaviour
     private void ShowCardOnStack(CardDescriptor cardDescriptor)
     {
         GameObject c = RenderNewCard(cardDescriptor, currentPlayer.gameObject.transform.position.x, currentPlayer.gameObject.transform.position.y);
-        //foreach (BoxCollider2D bc in c.GetComponents<BoxCollider2D>())
-        //{
-        //    bc.enabled = false;
-        //}
-        //c.GetComponent<SpriteRenderer>().sortingOrder = ONO.Current.game.playedCards.Count + 1;
         Card card = c.GetComponent<Card>();
         card.MoveToCardStack();
         renderedCards.Remove(c);
