@@ -5,6 +5,8 @@ using UnityEngine.UI;
 public class PopulateHighscores : MonoBehaviour
 {
     public GameObject PlayerNamePrefab;
+    public Sprite NormalPlayer;
+    public Sprite VirtualPlayer;
 
     private VerticalLayoutGroup vLayout;
 
@@ -22,6 +24,10 @@ public class PopulateHighscores : MonoBehaviour
                 t.text = score.playerName;
             else
                 t.text = score.highscore.ToString();
+        if (score.isVirtual)
+            clone.GetComponentInChildren<Image>().sprite = VirtualPlayer;
+        else
+            clone.GetComponentInChildren<Image>().sprite = NormalPlayer;
     }
 
     public void Populate()

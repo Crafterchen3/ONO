@@ -5,6 +5,7 @@ public class HighScore
 {
     public string playerName = "";
     public int highscore = 0;
+    public bool isVirtual = false;
 
     public class NameComparer : IComparer<HighScore>
     {

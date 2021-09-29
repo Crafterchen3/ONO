@@ -79,6 +79,6 @@ public class Card : MonoBehaviour
 
     void OnMouseDown()
     {
-        game.TryPlayCard(descriptor, spriteRenderer.sprite);
+        game.TryPlayCard(descriptor);
     }
 }

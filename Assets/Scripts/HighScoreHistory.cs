@@ -5,13 +5,10 @@ public class HighScoreHistory
 {
     public List<HighScore> highScores = new List<HighScore>();
 
-    public List<string> GetAllNames()
+    public List<HighScore> GetAllNames()
     {
-        List<string> result = new List<string>();
         highScores.Sort(new HighScore.NameComparer());
-        foreach (HighScore h in highScores)
-            result.Add(h.playerName);
-        return (result);
+        return (highScores);
     }
 
     public List<HighScore> GetHighscores()
@@ -25,11 +22,11 @@ public class HighScoreHistory
         return highScores.Find(h => h.playerName == name);
     }
 
-    public bool AddName(string name)
+    public bool AddName(string name, bool isVirtualPlayer)
     {
         if (string.IsNullOrEmpty(name) || (GetHighScore(name) != null))
             return false;
-        highScores.Add(new HighScore() { playerName = name });
+        highScores.Add(new HighScore() { playerName = name, isVirtual = isVirtualPlayer });
         return true;
     }
 

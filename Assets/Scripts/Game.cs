@@ -13,8 +13,9 @@ public class Game : MonoBehaviour
     public Sprite wish4;
     public GameObject cardPrefab;
     public GameObject playerPrefab;
-    public float cardCreationRate = 0.1f;
+    public float cardCreationRate = 0.01f;
     public int numberOfPlayers = 3;
+    public int numberOfHumanPlayers;
     public LayoutManager.ILayout layout;
 
     private Sprite[] allCardFaces;
@@ -42,7 +43,6 @@ public class Game : MonoBehaviour
 
     public HighScoreHistory highScoreHistory;
     public Persistence persistence;
-
 
     // Start is called before the first frame update
     void Start()
@@ -118,14 +118,18 @@ public class Game : MonoBehaviour
         CreateCards();
         DistributeCards();
         ChooseTopCard();
+        numberOfHumanPlayers = 0;
+        foreach (Player p in players)
+            if (!p.isVirtualPlayer)
+                numberOfHumanPlayers++;
         NextPlayer();
     }
 
-    public void CreatePlayer(int pos, string name)
+    public void CreatePlayer(int pos, string name, bool isVirtual)
     {
         GameObject clone = Instantiate(playerPrefab, layout.GetPositions(numberOfPlayers)[pos], layout.GetRotations(numberOfPlayers)[pos]);
         Player result = clone.GetComponent<Player>();
-        result.SetName(name);
+        result.SetName(name, isVirtual);
         result.cardQuaternion = layout.GetRotations(numberOfPlayers)[pos];
         result.freezeXPosition = layout.GetFreezePositionX(numberOfPlayers, pos);
         players.Add(result);
@@ -160,7 +164,7 @@ public class Game : MonoBehaviour
     private void Mix()
     {
         List<CardDescriptor> toDistribute = new List<CardDescriptor>();
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 10; i++)
         {
 
             foreach (CardDescriptor c in allCards)
@@ -241,13 +245,16 @@ public class Game : MonoBehaviour
         return result;
     }
 
-    public bool TryPlayCard(CardDescriptor cardDescriptor, Sprite cardFace)
+    public bool TryPlayCard(CardDescriptor cardDescriptor)
     {
-        if (cardDescriptor.visible && cardDescriptor.valid)
+        if ((currentPlayer.isVirtualPlayer || cardDescriptor.visible) && cardDescriptor.valid)
         {
             currentPlayer.cardsOfPlayer.Remove(cardDescriptor);
             playedCards.Add(cardDescriptor);
-            MoveCard(cardDescriptor);
+            if (currentPlayer.isVirtualPlayer)
+                ShowCardOnStack(cardDescriptor);
+            else
+                MoveCard(cardDescriptor);
             cardOnTop = cardDescriptor;
             if (currentPlayer.cardsOfPlayer.Count > 0)
             {
@@ -256,7 +263,10 @@ public class Game : MonoBehaviour
                     if (cardDescriptor.Number == CardDescriptor.WISHPLUS4)
                         GetNextPlayer().NoOfCardsToDraw = currentPlayer.NoOfCardsToDraw == 1 ? 4 : currentPlayer.NoOfCardsToDraw + 4;
                     currentPlayer.NoOfCardsToDraw = 1;
-                    ONO.Current.wishPopup.SetActive(true);
+                    if (currentPlayer.isVirtualPlayer)
+                        Invoke("SimulatorWish", 0.5f);
+                    else
+                        ONO.Current.wishPopup.SetActive(true);
                 }
                 else
                 {
@@ -287,6 +297,20 @@ public class Game : MonoBehaviour
             return true;
         }
         return false;
+    }
+
+    private void ShowCardOnStack(CardDescriptor cardDescriptor)
+    {
+        GameObject c = RenderNewCard(cardDescriptor, currentPlayer.gameObject.transform.position.x, currentPlayer.gameObject.transform.position.y);
+        //foreach (BoxCollider2D bc in c.GetComponents<BoxCollider2D>())
+        //{
+        //    bc.enabled = false;
+        //}
+        //c.GetComponent<SpriteRenderer>().sortingOrder = ONO.Current.game.playedCards.Count + 1;
+        Card card = c.GetComponent<Card>();
+        card.MoveToCardStack();
+        renderedCards.Remove(c);
+        renderedPlayedCards.Add(c);
     }
 
     private void MoveCard(CardDescriptor cardDescriptor)
@@ -349,6 +373,7 @@ public class Game : MonoBehaviour
         {
             currentPlayer.SetPlayerActive(false);
             CurrentPlayerWins();
+            HideCards(); // required if only one human player
             return;
         }
 
@@ -368,7 +393,10 @@ public class Game : MonoBehaviour
             currentPlayer = players[currentPlayerIndex];
             playerIsReady = false;
             currentPlayer.SetPlayerActive(true);
-            ONO.Current.nextPlayerButton.Show(currentPlayer.playerName);
+            if (currentPlayer.isVirtualPlayer || numberOfHumanPlayers <= 1)
+                Invoke("NextPlayerIsReady", 0.5f);
+            else
+                ONO.Current.nextPlayerButton.Show(currentPlayer.playerName);
         }
         else
         {
@@ -377,6 +405,8 @@ public class Game : MonoBehaviour
                 foreach (BoxCollider2D c in renderedCards[0].GetComponents<BoxCollider2D>())
                     c.enabled = true; // react on click on the right side of the most-left card
             ShowArrow();
+            if (currentPlayer.isVirtualPlayer)
+                Invoke("NextPlayerIsReady", 0.5f);
         }
     }
 
@@ -406,7 +436,7 @@ public class Game : MonoBehaviour
         newCardsQueue.Add(cardDescriptor);
     }
 
-    private void RenderNewCard(CardDescriptor cardDescriptor)
+    private GameObject RenderNewCard(CardDescriptor cardDescriptor)
     {
         float startX;
 
@@ -420,7 +450,12 @@ public class Game : MonoBehaviour
         }
         else
             startX = 6;
-        GameObject clone = Instantiate(cardPrefab, new Vector3(startX, -3.3f, 0f), Quaternion.identity);
+        return RenderNewCard(cardDescriptor, startX, -3.3f);
+    }
+
+    private GameObject RenderNewCard(CardDescriptor cardDescriptor, float x, float y)
+    {
+        GameObject clone = Instantiate(cardPrefab, new Vector3(x, y, 0f), Quaternion.identity);
         Card card = clone.GetComponent<Card>();
         if (playerIsReady)
             cardDescriptor.visible = true;
@@ -435,6 +470,17 @@ public class Game : MonoBehaviour
         sortingOrder--;
 
         renderedCards.Add(clone);
+        return (clone);
+    }
+
+    public void TurnCards()
+    {
+        foreach (GameObject c in renderedCards)
+        {
+            Card card = c.GetComponent<Card>();
+            card.descriptor.visible = !card.descriptor.visible;
+            card.Render();
+        }
     }
 
     private float nextCardCreation = 0.0f;
@@ -478,6 +524,11 @@ public class Game : MonoBehaviour
             return GetCardFace(3, 13);
     }
 
+    private void SimulatorWish()
+    {
+        Wish(currentPlayer.simulator.GetWishColor());
+    }
+
     public void Wish(int color)
     {
         cardOnTop.Color = color;
@@ -519,11 +570,18 @@ public class Game : MonoBehaviour
             players[skippedPlayer].Skipped = false;
             skippedPlayer = -1;
         }
-        ONO.Current.nextPlayerPopup.SetActive(false);
+
+        if (!currentPlayer.isVirtualPlayer)
+        {
+            ONO.Current.nextPlayerPopup.SetActive(false);
+            foreach (GameObject card in renderedCards)
+                card.GetComponent<Card>().Render();
+        }
+
         playerIsReady = true;
-        foreach (GameObject card in renderedCards)
-            card.GetComponent<Card>().Render();
         ShowArrow();
+        if (currentPlayer.isVirtualPlayer)
+            currentPlayer.simulator.SimulateMove();
     }
 
     public void DisplayScore()

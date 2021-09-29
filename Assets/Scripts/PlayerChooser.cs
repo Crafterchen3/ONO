@@ -22,9 +22,9 @@ public class PlayerChooser : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    public void SetChosenPlayer(string name)
+    public void SetChosenPlayer(string name, bool isVirtual)
     {
-        ONO.Current.playerNames.SetChosenPlayer(name);
+        ONO.Current.playerNames.SetChosenPlayer(name, isVirtual);
         Hide();
     }
 

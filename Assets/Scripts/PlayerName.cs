@@ -5,6 +5,7 @@ using TMPro;
 
 public class PlayerName : MonoBehaviour
 {
+    public bool isVirtual;
     private TMP_Text playerName;
     private PlayerChooser chooser;
 
@@ -17,7 +18,7 @@ public class PlayerName : MonoBehaviour
 
     public void ButtonPressed()
     {
-        chooser.SetChosenPlayer(playerName.text);
+        chooser.SetChosenPlayer(playerName.text, isVirtual);
     }
 
 }

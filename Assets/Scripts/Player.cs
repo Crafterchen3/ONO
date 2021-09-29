@@ -17,6 +17,7 @@ public class Player : MonoBehaviour
     public List<CardDescriptor> cardsOfPlayer = new List<CardDescriptor>();
     public List<GameObject> cardsOfPlayGOs = new List<GameObject>();
     public string playerName;
+    public bool isVirtualPlayer = false;
     public float endMoveDelay = 0.5f;
     public Quaternion cardQuaternion;
     public bool freezeXPosition;
@@ -42,11 +43,15 @@ public class Player : MonoBehaviour
 
     private bool delayedEndMove;
 
+    private bool sortingRequired = true;
+
     private int _wonGames = 0;
     private bool _isWinner = false;
 
     public int WonGames { get { return _wonGames; } }
     public bool IsWinner { get { return _isWinner; } }
+
+    public PlayerSimulator simulator;
 
     // Start is called before the first frame update
     void Start()
@@ -142,11 +147,13 @@ public class Player : MonoBehaviour
 
         if (active)
         {
-            newCardsCount = 0;
+            if (!isVirtualPlayer)
+                newCardsCount = 0;
             playerNameText.color = ONO.ActiveColor;
-            if (!isActivePlayer)
+            if (!isActivePlayer && !isVirtualPlayer && ((game.numberOfHumanPlayers > 1) || sortingRequired))
             {
                 cardsOfPlayer.Sort();
+                sortingRequired = false;
                 while (backSides.Count > 0)
                 {
                     GameObject.Destroy(backSides[0]);
@@ -158,6 +165,8 @@ public class Player : MonoBehaviour
                     game.ShowCard(cardsOfPlayer[i]);
                 }
             }
+            else if (!isActivePlayer)
+                game.TurnCards();
             isActivePlayer = true;
             drawingAllowed = true;
             ComputeCardValidity();
@@ -168,12 +177,29 @@ public class Player : MonoBehaviour
         else
         {
             playerNameText.color = ONO.InactiveColor;
-            game.HideCards();
-            newCardsCount = cardsOfPlayer.Count;
+            if (!isVirtualPlayer && ((game.numberOfHumanPlayers > 1) || sortingRequired))
+            {
+                game.HideCards();
+                newCardsCount = cardsOfPlayer.Count;
+            }
+            else if (!isActivePlayer)
+                game.TurnCards();
             isActivePlayer = false;
             if (OnoPressed && (cardsOfPlayer.Count > 1))
                 OnoPressed = false;
             RenderMessage();
+        }
+    }
+
+
+    public void PlayCard()
+    {
+        if (newCardsCount > 0)
+            newCardsCount--;
+        else if (backSides.Count > 0)
+        {
+            Destroy(backSides[0]);
+            backSides.RemoveAt(0);
         }
     }
 
@@ -217,10 +243,13 @@ public class Player : MonoBehaviour
         }
     }
 
-    public void SetName(string name)
+    public void SetName(string name, bool isVirtual)
     {
         // it is unknown whether Start was called before 
         this.playerName = name;
+        this.isVirtualPlayer = isVirtual;
+        if (isVirtual)
+            simulator = new PlayerSimulator(this);
         RenderName();
     }
 
@@ -233,7 +262,7 @@ public class Player : MonoBehaviour
         {
             CardDescriptor card = game.Draw();
             cardsOfPlayer.Add(card);
-            if (isActivePlayer)
+            if (isActivePlayer && !isVirtualPlayer)
                 game.ShowCard(card, true);
             else
                 newCardsCount++;
@@ -243,9 +272,13 @@ public class Player : MonoBehaviour
         {
             game.HideArrow();
             drawingAllowed = false;
+            sortingRequired = true;
             _noOfCardsToDraw = 1;
             if (!ComputeCardValidity())
-                ScheduleDelayedEndMove();
+                if (isVirtualPlayer)
+                    game.NextPlayer();
+                else
+                    ScheduleDelayedEndMove();
             else
                 ONO.Current.skipMove.Show();
             RenderMessage();
@@ -278,7 +311,7 @@ public class Player : MonoBehaviour
 
     public void Reset()
     {
-        for (int i = 0; i < cardsOfPlayer.Count; i++)
+        while (backSides.Count > 0)
         {
             GameObject.Destroy(backSides[0]);
             backSides.RemoveAt(0);
@@ -286,6 +319,7 @@ public class Player : MonoBehaviour
         playerNameText.color = ONO.InactiveColor;
         drawingAllowed = true;
         isActivePlayer = false;
+        sortingRequired = true;
         cardsOfPlayer.Clear();
         _isWinner = false;
         RenderMessage();

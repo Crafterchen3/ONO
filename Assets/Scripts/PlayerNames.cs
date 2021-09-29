@@ -7,6 +7,10 @@ using TMPro;
 
 public class PlayerNames : MonoBehaviour
 {
+
+    public Sprite NormalPlayer;
+    public Sprite VirtualPlayer;
+
     GameObject NoOfLayersChooserGO;
     TMP_Text NoOfPayersText;
     int NoOfPlayers = 2;
@@ -36,6 +40,15 @@ public class PlayerNames : MonoBehaviour
     GameObject ChoosePlayer5GO;
     GameObject ChoosePlayer6GO;
 
+    GameObject ChangePlayerKind1GO;
+    GameObject ChangePlayerKind2GO;
+    GameObject ChangePlayerKind3GO;
+    GameObject ChangePlayerKind4GO;
+    GameObject ChangePlayerKind5GO;
+    GameObject ChangePlayerKind6GO;
+
+    bool[] IsVirtualPlayer = new bool[6];
+
     // Start is called before the first frame update
     void Start()
     {
@@ -59,6 +72,12 @@ public class PlayerNames : MonoBehaviour
         ChoosePlayer4GO = GameObject.Find("ChoosePlayer4");
         ChoosePlayer5GO = GameObject.Find("ChoosePlayer5");
         ChoosePlayer6GO = GameObject.Find("ChoosePlayer6");
+        ChangePlayerKind1GO = GameObject.Find("PlayerKind1");
+        ChangePlayerKind2GO = GameObject.Find("PlayerKind2");
+        ChangePlayerKind3GO = GameObject.Find("PlayerKind3");
+        ChangePlayerKind4GO = GameObject.Find("PlayerKind4");
+        ChangePlayerKind5GO = GameObject.Find("PlayerKind5");
+        ChangePlayerKind6GO = GameObject.Find("PlayerKind6");
 
         HideUnhide();
 
@@ -87,6 +106,10 @@ public class PlayerNames : MonoBehaviour
         ChoosePlayer4GO.SetActive(4 <= NoOfPlayers);
         ChoosePlayer5GO.SetActive(5 <= NoOfPlayers);
         ChoosePlayer6GO.SetActive(6 <= NoOfPlayers);
+        ChangePlayerKind3GO.SetActive(3 <= NoOfPlayers);
+        ChangePlayerKind4GO.SetActive(4 <= NoOfPlayers);
+        ChangePlayerKind5GO.SetActive(5 <= NoOfPlayers);
+        ChangePlayerKind6GO.SetActive(6 <= NoOfPlayers);
     }
 
     public void MorePlayers()
@@ -110,16 +133,56 @@ public class PlayerNames : MonoBehaviour
     }
 
     private int currentPlayerToChoose = 0;
-    
-        public void ChoosePlayer(int playerNo)
+
+    public void ChoosePlayer(int playerNo)
     {
         currentPlayerToChoose = playerNo;
         ONO.Current.playerChooser.Show();
     }
 
-    public void SetChosenPlayer(string name)
+    private void RenderPlayerKind(int playerNo)
     {
-        switch(currentPlayerToChoose)
+        Sprite kind;
+
+        if (IsVirtualPlayer[playerNo - 1])
+            kind = VirtualPlayer;
+        else
+            kind = NormalPlayer;
+        switch (playerNo)
+        {
+            case 1:
+                ChangePlayerKind1GO.GetComponent<Image>().sprite = kind;
+                break;
+            case 2:
+                ChangePlayerKind2GO.GetComponent<Image>().sprite = kind;
+                break;
+            case 3:
+                ChangePlayerKind3GO.GetComponent<Image>().sprite = kind;
+                break;
+            case 4:
+                ChangePlayerKind4GO.GetComponent<Image>().sprite = kind;
+                break;
+            case 5:
+                ChangePlayerKind5GO.GetComponent<Image>().sprite = kind;
+                break;
+            case 6:
+                ChangePlayerKind6GO.GetComponent<Image>().sprite = kind;
+                break;
+        }
+    }
+
+    public void ChangePlayerKind(int playerNo)
+    {
+        IsVirtualPlayer[playerNo - 1] = !IsVirtualPlayer[playerNo - 1];
+        RenderPlayerKind(playerNo);
+    }
+
+    public void SetChosenPlayer(string name, bool isVirtual)
+    {
+        IsVirtualPlayer[currentPlayerToChoose - 1] = isVirtual;
+        RenderPlayerKind(currentPlayerToChoose);
+
+        switch (currentPlayerToChoose)
         {
             case 1:
                 Player1.text = name;
@@ -162,6 +225,11 @@ public class PlayerNames : MonoBehaviour
         return "";
     }
 
+    public bool GetPlayerIsVirtual(int index)
+    {
+        return IsVirtualPlayer[index];
+    }
+
     public void StartGame()
     {
         Game game = ONO.Current.game;
@@ -169,8 +237,8 @@ public class PlayerNames : MonoBehaviour
         bool newPlayer = false;
         for (int i = 0; i < NoOfPlayers; i++)
         {
-            game.CreatePlayer(i, GetPlayerName(i));
-            newPlayer = game.highScoreHistory.AddName(GetPlayerName(i)) || newPlayer;
+            game.CreatePlayer(i, GetPlayerName(i), GetPlayerIsVirtual(i));
+            newPlayer = game.highScoreHistory.AddName(GetPlayerName(i), GetPlayerIsVirtual(i)) || newPlayer;
         }
         if (newPlayer)
             game.persistence.SaveHighScores();
