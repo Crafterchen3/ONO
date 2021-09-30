@@ -258,7 +258,12 @@ public class Game : MonoBehaviour
             if (currentPlayer.isVirtualPlayer)
                 ShowCardOnStack(cardDescriptor);
             else
+            {
                 MoveCard(cardDescriptor);
+                if ((currentPlayer.cardsOfPlayer.IndexOf(cardDescriptor) == 0) && (currentPlayer.cardsOfPlayer.Count > 1))
+                    foreach (BoxCollider2D c in renderedCards[1].GetComponents<BoxCollider2D>())
+                        c.enabled = true; // react on click on the right side of the most-left card
+            }
             cardOnTop = cardDescriptor;
             if (currentPlayer.cardsOfPlayer.Count > 0)
             {
@@ -312,19 +317,24 @@ public class Game : MonoBehaviour
         renderedPlayedCards.Add(c);
     }
 
-    private void MoveCard(CardDescriptor cardDescriptor)
+    private Card GetCardController(CardDescriptor cardDescriptor)
     {
         foreach (GameObject c in renderedCards)
         {
             Card card = c.GetComponent<Card>();
             if (card.descriptor == cardDescriptor)
-            {
-                card.MoveToCardStack();
-                renderedCards.Remove(c);
-                renderedPlayedCards.Add(c);
-                break;
-            }
+                return card;
         }
+        return null;
+
+    }
+
+    private void MoveCard(CardDescriptor cardDescriptor)
+    {
+        Card card = GetCardController(cardDescriptor);
+        card.MoveToCardStack();
+        renderedCards.Remove(card.gameObject);
+        renderedPlayedCards.Add(card.gameObject);
     }
 
     public void VisualizeValidity(CardDescriptor descriptor)
@@ -400,9 +410,6 @@ public class Game : MonoBehaviour
         else
         {
             currentPlayer.SetPlayerActive(true);
-            if (renderedCards.Count > 0)
-                foreach (BoxCollider2D c in renderedCards[0].GetComponents<BoxCollider2D>())
-                    c.enabled = true; // react on click on the right side of the most-left card
             ShowArrow();
             if (currentPlayer.isVirtualPlayer)
                 Invoke("NextPlayerIsReady", 0.5f);

@@ -326,6 +326,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PlayerNamePrefab: {fileID: 8315673163496965477, guid: 109732d14e68c704a8b2f6291f47226a, type: 3}
+  NormalPlayer: {fileID: 21300000, guid: 19c06822926ff454f9d3342a3e40b7db, type: 3}
+  VirtualPlayer: {fileID: 21300000, guid: 339a6983c4d9dc94f979530b2aac3423, type: 3}
 --- !u!114 &51545780
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2472,7 +2474,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1242077222}
   m_HandleRect: {fileID: 1242077221}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -6258,8 +6260,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 82190612}
   m_HandleRect: {fileID: 82190611}
   m_Direction: 0
-  m_Value: 0.000002050668
-  m_Size: 0.98163086
+  m_Value: 0
+  m_Size: 0.98163074
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -8487,6 +8489,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PlayerNamePrefab: {fileID: 8315673163496965477, guid: de49b312876963f4489ec24f39efb1df, type: 3}
+  NormalPlayer: {fileID: 21300000, guid: 19c06822926ff454f9d3342a3e40b7db, type: 3}
+  VirtualPlayer: {fileID: 21300000, guid: 339a6983c4d9dc94f979530b2aac3423, type: 3}
 --- !u!114 &1135203520
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11501,6 +11505,7 @@ MonoBehaviour:
   playerPrefab: {fileID: 3826934972913533717, guid: 6adc4a28a0c486942b5ba29011fa83a0, type: 3}
   cardCreationRate: 0.2
   numberOfPlayers: 3
+  numberOfHumanPlayers: 0
   players: []
 --- !u!4 &1469024476
 Transform:
