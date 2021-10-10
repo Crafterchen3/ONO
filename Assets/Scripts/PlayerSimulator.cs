@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,6 +6,30 @@ using UnityEngine;
 public class PlayerSimulator
 {
     private Player player;
+
+    private class CardCounter : IComparable<CardCounter>
+    {
+        public int color;
+        public int counter = 0;
+
+        public CardCounter(int color)
+        {
+            this.color = color;
+        }
+
+        // Default comparer 
+        public int CompareTo(CardCounter compareColor)
+        {
+            // A null value means that this object is greater.
+            if (compareColor == null)
+                return -1;
+
+            else
+                return -1 * this.counter.CompareTo(compareColor.counter);
+        }
+
+    }
+
 
     public PlayerSimulator(Player player)
     {
@@ -15,13 +40,21 @@ public class PlayerSimulator
 
     private CardDescriptor ChooseCard()
     {
-        int[] numberOfCardsPerColor = new int[4];
+        List<CardCounter> numberOfCardsPerColor = new List<CardCounter>();
+        bool[] colorIsValid = new bool[4];
+
         CardDescriptor plus4 = null;
         CardDescriptor wish = null;
         CardDescriptor plus2 = null;
         CardDescriptor changeDir = null;
         CardDescriptor skip = null;
         bool regularCardFound = false;
+
+        for (int i = 0; i < 4; i++)
+        {
+            numberOfCardsPerColor.Add(new CardCounter(i));
+            colorIsValid[i] = false;
+        }
 
         foreach (CardDescriptor c in player.cardsOfPlayer)
 
@@ -34,10 +67,11 @@ public class PlayerSimulator
             }
             else
             {
-                numberOfCardsPerColor[c.Color - 1]++;
+                numberOfCardsPerColor[c.Color - 1].counter++;
                 if (c.valid)
                 {
                     regularCardFound = true;
+                    colorIsValid[c.Color - 1] = true;
                     switch (c.Number)
                     {
                         case CardDescriptor.PLUS2:
@@ -53,6 +87,9 @@ public class PlayerSimulator
                 }
             }
 
+        // let numberOfCardsPerColor[0].color point to the color with the maximum number of cards
+        numberOfCardsPerColor.Sort();
+
         if (regularCardFound)
         {
             if (plus2 != null)
@@ -62,20 +99,15 @@ public class PlayerSimulator
             if (changeDir != null)
                 return changeDir;
 
-            foreach (CardDescriptor c in player.cardsOfPlayer)
-                if ((c.valid) && !c.Special)
-                    return c;
+            for (int counter = 0; counter < 4; counter++)
+                if (colorIsValid[numberOfCardsPerColor[counter].color])
+                    foreach (CardDescriptor c in player.cardsOfPlayer)
+                        if ((c.Color == numberOfCardsPerColor[counter].color + 1) & c.valid && !c.Special)
+                            return c;
         }
         else
         {
-            int maxCards = 0;
-            wishColor = Random.Range(0, 63) % 4 + 1;
-            for (int i = 0; i < 4; i++)
-                if (numberOfCardsPerColor[i] > maxCards)
-                {
-                    wishColor = i + 1;
-                    maxCards = numberOfCardsPerColor[i];
-                }
+            wishColor = numberOfCardsPerColor[0].color + 1;
             if (wish != null)
                 return wish;
             if (plus4 != null)
