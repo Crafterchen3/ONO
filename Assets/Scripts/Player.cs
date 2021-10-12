@@ -253,6 +253,25 @@ public class Player : MonoBehaviour
         RenderName();
     }
 
+    private void CheckIfSortingIsRequired()
+    {
+        List<int> colorsFound = new List<int>();
+        int lastColor = -1;
+
+        sortingRequired = false;
+        foreach (CardDescriptor c in cardsOfPlayer)
+            if (c.Color != lastColor)
+            {
+                if (colorsFound.Contains(c.Color))
+                {
+                    sortingRequired = true;
+                    return;
+                }
+                colorsFound.Add(lastColor);
+                lastColor = c.Color;
+            }
+    }
+
     public void Draw(int numberOfCards)
     {
         if (!drawingAllowed)
@@ -272,7 +291,7 @@ public class Player : MonoBehaviour
         {
             game.HideArrow();
             drawingAllowed = false;
-            sortingRequired = true;
+            CheckIfSortingIsRequired();
             _noOfCardsToDraw = 1;
             if (!ComputeCardValidity())
                 if (isVirtualPlayer)

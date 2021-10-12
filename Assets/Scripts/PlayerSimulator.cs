@@ -11,6 +11,7 @@ public class PlayerSimulator
     {
         public int color;
         public int counter = 0;
+        public CardDescriptor validCard = null;
 
         public CardCounter(int color)
         {
@@ -41,7 +42,6 @@ public class PlayerSimulator
     private CardDescriptor ChooseCard()
     {
         List<CardCounter> numberOfCardsPerColor = new List<CardCounter>();
-        bool[] colorIsValid = new bool[4];
 
         CardDescriptor plus4 = null;
         CardDescriptor wish = null;
@@ -51,10 +51,7 @@ public class PlayerSimulator
         bool regularCardFound = false;
 
         for (int i = 0; i < 4; i++)
-        {
             numberOfCardsPerColor.Add(new CardCounter(i));
-            colorIsValid[i] = false;
-        }
 
         foreach (CardDescriptor c in player.cardsOfPlayer)
 
@@ -71,7 +68,7 @@ public class PlayerSimulator
                 if (c.valid)
                 {
                     regularCardFound = true;
-                    colorIsValid[c.Color - 1] = true;
+                    numberOfCardsPerColor[c.Color - 1].validCard = c;
                     switch (c.Number)
                     {
                         case CardDescriptor.PLUS2:
@@ -100,10 +97,8 @@ public class PlayerSimulator
                 return changeDir;
 
             for (int counter = 0; counter < 4; counter++)
-                if (colorIsValid[numberOfCardsPerColor[counter].color])
-                    foreach (CardDescriptor c in player.cardsOfPlayer)
-                        if ((c.Color == numberOfCardsPerColor[counter].color + 1) & c.valid && !c.Special)
-                            return c;
+                if (numberOfCardsPerColor[counter].validCard != null)
+                    return numberOfCardsPerColor[counter].validCard;
         }
         else
         {
